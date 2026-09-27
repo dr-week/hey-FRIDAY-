@@ -1,0 +1,149 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 340" width="100%" height="340" style="background:#07090e; border-radius:18px; font-family:'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a0f1d"/>
+      <stop offset="50%" stop-color="#07090e"/>
+      <stop offset="100%" stop-color="#05060a"/>
+    </linearGradient>
+
+    <!-- Neon Glow Filters -->
+    <filter id="glow-cyan" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="12" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+    <filter id="glow-violet" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="16" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+    <filter id="pill-shadow" x="-10%" y="-10%" width="120%" height="140%">
+      <feDropShadow dx="0" dy="16" stdDeviation="24" flood-color="#000000" flood-opacity="0.8"/>
+      <feDropShadow dx="0" dy="0" stdDeviation="12" flood-color="#00f2fe" flood-opacity="0.3"/>
+    </filter>
+
+    <!-- Linear Gradients -->
+    <linearGradient id="grad-cyan-blue" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00f2fe"/>
+      <stop offset="100%" stop-color="#4facfe"/>
+    </linearGradient>
+    <linearGradient id="grad-violet" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a855f7"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+    <linearGradient id="pill-border" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="rgba(56, 189, 248, 0.8)"/>
+      <stop offset="50%" stop-color="rgba(168, 85, 247, 0.6)"/>
+      <stop offset="100%" stop-color="rgba(56, 189, 248, 0.8)"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Canvas Background with Grid Texture -->
+  <rect width="1200" height="340" rx="18" fill="url(#bg-grad)"/>
+  
+  <!-- Subtle ambient decorative light rays -->
+  <circle cx="240" cy="80" r="180" fill="#00f2fe" opacity="0.06" filter="url(#glow-cyan)" />
+  <circle cx="960" cy="220" r="220" fill="#8b5cf6" opacity="0.05" filter="url(#glow-violet)" />
+
+  <!-- Left: Branding & Tagline -->
+  <g transform="translate(70, 75)">
+    <!-- Subtitle pill badge -->
+    <rect x="0" y="0" width="220" height="26" rx="13" fill="rgba(56, 189, 248, 0.12)" stroke="rgba(56, 189, 248, 0.35)" stroke-width="1"/>
+    <circle cx="14" cy="13" r="4" fill="#00f2fe" filter="url(#glow-cyan)"/>
+    <text x="26" y="17" fill="#38bdf8" font-size="11" font-weight="700" letter-spacing="1.2">SYSTEM-1 DESKTOP AI</text>
+
+    <!-- Main Title -->
+    <text x="0" y="72" fill="#ffffff" font-size="46" font-weight="800" letter-spacing="-0.5">
+      Hey <tspan fill="url(#grad-cyan-blue)">FRIDAY</tspan>
+    </text>
+    
+    <!-- Enterprise Tagline -->
+    <text x="0" y="108" fill="#94a3b8" font-size="16" font-weight="400">
+      Sub-30ms Non-Autoregressive Voice &amp; Windows Automation
+    </text>
+
+    <!-- Feature Tags -->
+    <g transform="translate(0, 134)">
+      <!-- Tag 1 -->
+      <rect x="0" y="0" width="105" height="24" rx="6" fill="rgba(255, 255, 255, 0.05)" stroke="rgba(255, 255, 255, 0.1)" stroke-width="1"/>
+      <text x="12" y="16" fill="#e2e8f0" font-size="11" font-weight="600">⚡ &lt;30ms Latency</text>
+
+      <!-- Tag 2 -->
+      <rect x="115" y="0" width="105" height="24" rx="6" fill="rgba(255, 255, 255, 0.05)" stroke="rgba(255, 255, 255, 0.1)" stroke-width="1"/>
+      <text x="126" y="16" fill="#e2e8f0" font-size="11" font-weight="600">🛡️ Zero Cloud Cost</text>
+
+      <!-- Tag 3 -->
+      <rect x="230" y="0" width="118" height="24" rx="6" fill="rgba(255, 255, 255, 0.05)" stroke="rgba(255, 255, 255, 0.1)" stroke-width="1"/>
+      <text x="241" y="16" fill="#e2e8f0" font-size="11" font-weight="600">🎯 Zero Mic Locking</text>
+    </g>
+  </g>
+
+  <!-- Right: Glassmorphic Floating Pill UI Mockup -->
+  <g transform="translate(680, 125)" filter="url(#pill-shadow)">
+    <!-- Pill Base -->
+    <rect x="0" y="0" width="450" height="74" rx="37" fill="rgba(15, 23, 42, 0.94)" stroke="url(#pill-border)" stroke-width="1.6"/>
+    
+    <!-- Drag Handle (6-dot) -->
+    <g transform="translate(24, 27)" fill="#475569">
+      <circle cx="2" cy="4" r="2"/><circle cx="8" cy="4" r="2"/>
+      <circle cx="2" cy="10" r="2"/><circle cx="8" cy="10" r="2"/>
+      <circle cx="2" cy="16" r="2"/><circle cx="8" cy="16" r="2"/>
+    </g>
+
+    <!-- Button 1: Mute Audio -->
+    <g transform="translate(54, 18)">
+      <circle cx="19" cy="19" r="19" fill="rgba(255, 255, 255, 0.06)" stroke="rgba(255, 255, 255, 0.12)"/>
+      <path d="M14 15l4-3v14l-4-3h-3v-8h3z M21 16l4 6 M25 16l-4 6" stroke="#94a3b8" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+    </g>
+
+    <!-- Button 2: Camera Snip -->
+    <g transform="translate(104, 18)">
+      <circle cx="19" cy="19" r="19" fill="rgba(255, 255, 255, 0.06)" stroke="rgba(255, 255, 255, 0.12)"/>
+      <rect x="11" y="13" width="16" height="12" rx="2.5" stroke="#94a3b8" stroke-width="1.8" fill="none"/>
+      <circle cx="19" cy="19" r="3.2" stroke="#94a3b8" stroke-width="1.8" fill="none"/>
+    </g>
+
+    <!-- Center: Glowing Voice Mic + Dynamic Frequency Waveform -->
+    <g transform="translate(162, 12)">
+      <!-- Outer Pulsing Halo -->
+      <circle cx="25" cy="25" r="28" fill="none" stroke="#00f2fe" stroke-width="1.5" opacity="0.4" filter="url(#glow-cyan)"/>
+      
+      <!-- Center Glowing Mic Button -->
+      <circle cx="25" cy="25" r="23" fill="url(#grad-cyan-blue)" filter="url(#glow-cyan)"/>
+      
+      <!-- Mic Icon -->
+      <g transform="translate(18, 16)" stroke="#ffffff" stroke-width="1.8" fill="none" stroke-linecap="round">
+        <rect x="4" y="2" width="6" height="10" rx="3" fill="#ffffff"/>
+        <path d="M1 8a6 6 0 0 0 12 0"/>
+        <line x1="7" y1="14" x2="7" y2="17"/>
+      </g>
+    </g>
+
+    <!-- Dynamic Glowing Waveform Module -->
+    <g transform="translate(230, 23)">
+      <rect x="0" y="0" width="80" height="28" rx="14" fill="rgba(15, 23, 42, 0.85)" stroke="rgba(0, 242, 254, 0.7)" stroke-width="1"/>
+      <!-- Wave bars -->
+      <g fill="url(#grad-cyan-blue)">
+        <rect x="12" y="10" width="3" height="8" rx="1.5"/>
+        <rect x="20" y="6" width="3" height="16" rx="1.5"/>
+        <rect x="28" y="4" width="3" height="20" rx="1.5"/>
+        <rect x="36" y="8" width="3" height="12" rx="1.5"/>
+        <rect x="44" y="5" width="3" height="18" rx="1.5"/>
+        <rect x="52" y="7" width="3" height="14" rx="1.5"/>
+        <rect x="60" y="11" width="3" height="6" rx="1.5"/>
+      </g>
+    </g>
+
+    <!-- Button 4: Lock PC -->
+    <g transform="translate(332, 18)">
+      <circle cx="19" cy="19" r="19" fill="rgba(255, 255, 255, 0.06)" stroke="rgba(255, 255, 255, 0.12)"/>
+      <rect x="12" y="16" width="14" height="10" rx="2" stroke="#94a3b8" stroke-width="1.8" fill="none"/>
+      <path d="M15 16v-4a4 4 0 0 1 8 0v4" stroke="#94a3b8" stroke-width="1.8" fill="none"/>
+    </g>
+
+    <!-- Button 5: Crimson Close -->
+    <g transform="translate(382, 18)">
+      <circle cx="19" cy="19" r="19" fill="rgba(255, 71, 87, 0.12)" stroke="rgba(255, 71, 87, 0.35)"/>
+      <path d="M14 14l10 10 M24 14l-10 10" stroke="#ff4757" stroke-width="2" stroke-linecap="round"/>
+    </g>
+  </g>
+</svg>
