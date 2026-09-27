@@ -1,0 +1,24 @@
+{
+  "name": "heyfriday",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "src/core/friday.ts",
+  "private": true,
+  "scripts": {
+    "start": "powershell -ExecutionPolicy Bypass -File scripts/start_friday.ps1",
+    "start:bat": "cmd /c scripts\\start_friday.bat",
+    "server": "bun run src/server/index.ts",
+    "ui:build": "cd desktop-ui && bun run build",
+    "test": "bun test src/tests/friday.test.ts",
+    "test:cli": "bun run src/tests/index.ts",
+    "test:goa": "bun run src/tests/test_goa.ts",
+    "crash:analyze": "bun run scripts/crash_analyzer.ts",
+    "crash:clear": "bun run scripts/crash_analyzer.ts --clear"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}

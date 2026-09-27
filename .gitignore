@@ -1,0 +1,43 @@
+# Dependencies
+node_modules
+.venv
+__pycache__
+*.pyc
+
+# Build outputs
+out
+dist
+*.tgz
+
+# Local database and browser profile
+data/*.sqlite*
+data/.browser_profile/
+data/crashes/*.json
+data/crashes/*.log
+!data/.gitkeep
+
+# Code coverage & testing
+coverage
+*.lcov
+
+# Logs
+logs
+*.log
+_.log
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Caches & temporary files
+.eslintcache
+.cache
+*.tsbuildinfo
+
+# IDE & OS files
+.idea
+.vscode
+.DS_Store
+Thumbs.db

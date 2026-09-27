@@ -1,0 +1,395 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  user-select: none;
+}
+
+body, html {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: #07090e;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.canvas-container {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+/* Floating Glassmorphic Pill */
+.pill-widget {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  border-radius: 9999px;
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(28px) saturate(200%);
+  -webkit-backdrop-filter: blur(28px) saturate(200%);
+  border: 1.5px solid rgba(56, 189, 248, 0.5);
+  box-shadow: 
+    0 16px 40px rgba(0, 0, 0, 0.75),
+    0 0 25px rgba(0, 242, 254, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  cursor: grab;
+  opacity: 0.88;
+  animation: pillEntrance 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transition: transform 0.15s ease-out, box-shadow 0.3s ease, border-color 0.3s ease, opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 100;
+}
+
+@keyframes pillEntrance {
+  0% {
+    opacity: 0;
+    transform: scale(0.7) translateY(40px);
+    box-shadow: 0 0 0 rgba(0, 242, 254, 0);
+  }
+  60% {
+    transform: scale(1.05) translateY(-4px);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9), 0 0 45px rgba(0, 242, 254, 0.65);
+  }
+  100% {
+    opacity: 0.88;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.pill-widget:hover,
+.pill-widget.listening {
+  opacity: 1;
+}
+
+.pill-widget:active {
+  cursor: grabbing;
+  box-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.8),
+    0 0 30px rgba(0, 242, 254, 0.5);
+}
+
+/* Drag Handle */
+.drag-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #475569;
+  cursor: grab;
+  margin-right: -4px;
+  transition: color 0.2s ease;
+}
+
+.drag-handle:hover {
+  color: #38bdf8;
+}
+
+/* Common Action Buttons */
+.action-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.action-btn:hover {
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.22);
+  border-color: rgba(56, 189, 248, 0.65);
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.5);
+  transform: translateY(-1.5px);
+}
+
+.action-btn:active {
+  transform: scale(0.92);
+}
+
+/* Crimson Close Button */
+.close-btn {
+  color: #94a3b8;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.close-btn:hover {
+  color: #ff4757;
+  background: rgba(255, 71, 87, 0.25);
+  border-color: rgba(255, 71, 87, 0.7);
+  box-shadow: 0 0 22px rgba(255, 71, 87, 0.75);
+  transform: rotate(90deg) scale(1.1);
+}
+
+.close-btn:active {
+  transform: rotate(90deg) scale(0.92);
+}
+
+/* Center Glowing Microphone */
+.mic-btn {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  outline: none;
+}
+
+.mic-core {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #00f2fe 0%, #4facfe 50%, #9055ff 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 
+    0 0 22px rgba(0, 242, 254, 0.65),
+    0 0 45px rgba(79, 172, 254, 0.4);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 2;
+}
+
+.mic-btn:hover .mic-core {
+  transform: scale(1.08);
+  box-shadow: 
+    0 0 30px rgba(0, 242, 254, 0.9),
+    0 0 60px rgba(144, 85, 255, 0.6);
+}
+
+/* Active Listening Rings */
+.mic-rings {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  border: 2px solid transparent;
+  background: linear-gradient(45deg, #00f2fe, #f093fb, #4facfe) border-box;
+  -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: destination-out;
+  mask-composite: exclude;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.pill-widget.listening .mic-core {
+  background: linear-gradient(135deg, #ff0844 0%, #ffb199 100%);
+  box-shadow: 
+    0 0 28px rgba(255, 8, 68, 0.95),
+    0 0 65px rgba(255, 177, 153, 0.7);
+  animation: corePulse 1.2s infinite alternate ease-in-out;
+}
+
+.pill-widget.listening .mic-rings {
+  opacity: 1;
+  animation: ringPulse 1.4s infinite ease-out;
+}
+
+@keyframes ringPulse {
+  0% {
+    width: 42px;
+    height: 42px;
+    opacity: 0.9;
+  }
+  100% {
+    width: 78px;
+    height: 78px;
+    opacity: 0;
+  }
+}
+
+@keyframes corePulse {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.12); }
+}
+
+/* Subtitle Response Toast */
+.speech-toast {
+  position: absolute;
+  bottom: 24px;
+  padding: 8px 18px;
+  border-radius: 9999px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  color: #e2e8f0;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6), 0 0 15px rgba(56, 189, 248, 0.25);
+  animation: fadeIn 0.3s ease-out;
+  pointer-events: none;
+  max-width: 90vw;
+  text-align: center;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================================
+   Glowing Audio Waveform Visualizer & Microphone Indicator
+   ========================================================================== */
+.mic-waveform-group {
+  display: flex;
+  align-items: center;
+  position: relative;
+  gap: 8px;
+}
+
+.waveform-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  height: 28px;
+  padding: 0 6px;
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+
+.waveform-container.active {
+  background: rgba(15, 23, 42, 0.9);
+  border-color: rgba(0, 242, 254, 0.85);
+  box-shadow: 0 0 18px rgba(0, 242, 254, 0.6), inset 0 0 10px rgba(0, 242, 254, 0.25);
+}
+
+.waveform-container.processing {
+  border-color: rgba(240, 147, 251, 0.85);
+  box-shadow: 0 0 18px rgba(240, 147, 251, 0.6), inset 0 0 10px rgba(240, 147, 251, 0.25);
+}
+
+.waveform-glow-bg {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, rgba(0, 242, 254, 0.25) 0%, transparent 80%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.waveform-container.active .waveform-glow-bg {
+  opacity: 1;
+}
+
+.wave-bars {
+  display: flex;
+  align-items: center;
+  gap: 3.5px;
+  height: 20px;
+  z-index: 1;
+}
+
+.wave-bar {
+  width: 3px;
+  height: 4px;
+  border-radius: 9999px;
+  background: rgba(148, 163, 184, 0.4);
+  transition: height 0.2s ease, background 0.2s ease;
+}
+
+/* Standby idle gentle rhythmic breathing */
+.wave-bar.bar-1 { animation: idlePulse 2.4s ease-in-out infinite 0.1s; }
+.wave-bar.bar-2 { animation: idlePulse 2.4s ease-in-out infinite 0.3s; }
+.wave-bar.bar-3 { animation: idlePulse 2.4s ease-in-out infinite 0.5s; }
+.wave-bar.bar-4 { animation: idlePulse 2.4s ease-in-out infinite 0.7s; }
+.wave-bar.bar-5 { animation: idlePulse 2.4s ease-in-out infinite 0.5s; }
+.wave-bar.bar-6 { animation: idlePulse 2.4s ease-in-out infinite 0.3s; }
+.wave-bar.bar-7 { animation: idlePulse 2.4s ease-in-out infinite 0.1s; }
+
+@keyframes idlePulse {
+  0%, 100% { height: 4px; opacity: 0.35; }
+  50% { height: 7px; opacity: 0.75; }
+}
+
+/* Active listening: Dynamic Glowing Audio Bars */
+.waveform-container.active .wave-bar {
+  background: linear-gradient(180deg, #00f2fe 0%, #4facfe 100%);
+  box-shadow: 0 0 8px rgba(0, 242, 254, 0.8);
+}
+
+.waveform-container.active .wave-bar.bar-1 { animation: soundWave 0.6s ease-in-out infinite alternate 0.05s; }
+.waveform-container.active .wave-bar.bar-2 { animation: soundWave 0.5s ease-in-out infinite alternate 0.15s; }
+.waveform-container.active .wave-bar.bar-3 { animation: soundWave 0.7s ease-in-out infinite alternate 0.25s; }
+.waveform-container.active .wave-bar.bar-4 { animation: soundWave 0.45s ease-in-out infinite alternate 0.35s; }
+.waveform-container.active .wave-bar.bar-5 { animation: soundWave 0.65s ease-in-out infinite alternate 0.2s; }
+.waveform-container.active .wave-bar.bar-6 { animation: soundWave 0.55s ease-in-out infinite alternate 0.1s; }
+.waveform-container.active .wave-bar.bar-7 { animation: soundWave 0.6s ease-in-out infinite alternate 0.3s; }
+
+@keyframes soundWave {
+  0% { height: 5px; }
+  50% { height: 18px; }
+  100% { height: 9px; }
+}
+
+/* Processing: Violet/Magenta Pulse */
+.waveform-container.processing .wave-bar {
+  background: linear-gradient(180deg, #f093fb 0%, #f5576c 100%);
+  box-shadow: 0 0 8px rgba(240, 147, 251, 0.8);
+  animation: processingWave 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes processingWave {
+  0% { height: 6px; }
+  100% { height: 16px; }
+}
+
+/* ==========================================================================
+   Wall Sticking & Magnetic Edge Docking Styles
+   ========================================================================== */
+.pill-widget.docked-left {
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+  border-left-width: 3px;
+  border-left-color: #38bdf8;
+  box-shadow: -4px 0 25px rgba(56, 189, 248, 0.4), 0 16px 40px rgba(0, 0, 0, 0.8);
+}
+
+.pill-widget.docked-right {
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+  border-right-width: 3px;
+  border-right-color: #38bdf8;
+  box-shadow: 4px 0 25px rgba(56, 189, 248, 0.4), 0 16px 40px rgba(0, 0, 0, 0.8);
+}
+
+.pill-widget.docked-top {
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+  border-top-width: 3px;
+  border-top-color: #38bdf8;
+  box-shadow: 0 -4px 25px rgba(56, 189, 248, 0.4), 0 16px 40px rgba(0, 0, 0, 0.8);
+}
+
+.pill-widget.docked-bottom {
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+  border-bottom-width: 3px;
+  border-bottom-color: #38bdf8;
+  box-shadow: 0 4px 25px rgba(56, 189, 248, 0.4), 0 16px 40px rgba(0, 0, 0, 0.8);
+}
+
