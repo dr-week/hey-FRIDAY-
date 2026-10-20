@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 340" width="100%" height="340" style="background:#07090e; border-radius:18px; font-family:'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 360" width="100%" height="360" style="background:#07090e; border-radius:18px; font-family:'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;">
   <defs>
     <!-- Background Gradient -->
     <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -26,9 +26,9 @@
       <stop offset="0%" stop-color="#00f2fe"/>
       <stop offset="100%" stop-color="#4facfe"/>
     </linearGradient>
-    <linearGradient id="grad-violet" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#a855f7"/>
-      <stop offset="100%" stop-color="#6366f1"/>
+    <linearGradient id="grad-danger-amber" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#ef4444"/>
     </linearGradient>
     <linearGradient id="pill-border" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%" stop-color="rgba(56, 189, 248, 0.8)"/>
@@ -38,47 +38,55 @@
   </defs>
 
   <!-- Canvas Background with Grid Texture -->
-  <rect width="1200" height="340" rx="18" fill="url(#bg-grad)"/>
+  <rect width="1200" height="360" rx="18" fill="url(#bg-grad)"/>
   
   <!-- Subtle ambient decorative light rays -->
   <circle cx="240" cy="80" r="180" fill="#00f2fe" opacity="0.06" filter="url(#glow-cyan)" />
   <circle cx="960" cy="220" r="220" fill="#8b5cf6" opacity="0.05" filter="url(#glow-violet)" />
 
   <!-- Left: Branding & Tagline -->
-  <g transform="translate(70, 75)">
-    <!-- Subtitle pill badge -->
-    <rect x="0" y="0" width="220" height="26" rx="13" fill="rgba(56, 189, 248, 0.12)" stroke="rgba(56, 189, 248, 0.35)" stroke-width="1"/>
-    <circle cx="14" cy="13" r="4" fill="#00f2fe" filter="url(#glow-cyan)"/>
-    <text x="26" y="17" fill="#38bdf8" font-size="11" font-weight="700" letter-spacing="1.2">SYSTEM-1 DESKTOP AI</text>
+  <g transform="translate(70, 65)">
+    <!-- Danger Labs Header Pill -->
+    <g transform="translate(0, 0)">
+      <rect x="0" y="0" width="220" height="26" rx="13" fill="rgba(15, 23, 42, 0.8)" stroke="rgba(245, 158, 11, 0.35)" stroke-width="1"/>
+      <!-- Danger Labs Delta/Hex Icon -->
+      <polygon points="12,18 16,10 20,18" fill="url(#grad-danger-amber)" stroke="rgba(245, 158, 11, 0.6)" stroke-width="0.5"/>
+      <text x="28" y="17" fill="#fbbf24" font-size="11" font-weight="700" letter-spacing="1.2">DANGER LABS</text>
+      <circle cx="120" cy="13" r="2" fill="#64748b"/>
+      <text x="130" y="17" fill="#94a3b8" font-size="10.5" font-weight="600" letter-spacing="0.8">SYSTEM-1 AI</text>
+    </g>
 
     <!-- Main Title -->
-    <text x="0" y="72" fill="#ffffff" font-size="46" font-weight="800" letter-spacing="-0.5">
+    <text x="0" y="80" fill="#ffffff" font-size="48" font-weight="800" letter-spacing="-0.8">
       Hey <tspan fill="url(#grad-cyan-blue)">FRIDAY</tspan>
     </text>
     
     <!-- Enterprise Tagline -->
-    <text x="0" y="108" fill="#94a3b8" font-size="16" font-weight="400">
-      Sub-30ms Non-Autoregressive Voice &amp; Windows Automation
+    <text x="0" y="118" fill="#cbd5e1" font-size="16" font-weight="400">
+      Zero-Latency System-1 Desktop Assistant &amp; Windows Automation
+    </text>
+    <text x="0" y="142" fill="#64748b" font-size="13" font-weight="400">
+      Engineered by Danger Labs • Non-Autoregressive Laya Decision Architecture
     </text>
 
     <!-- Feature Tags -->
-    <g transform="translate(0, 134)">
+    <g transform="translate(0, 172)">
       <!-- Tag 1 -->
-      <rect x="0" y="0" width="105" height="24" rx="6" fill="rgba(255, 255, 255, 0.05)" stroke="rgba(255, 255, 255, 0.1)" stroke-width="1"/>
-      <text x="12" y="16" fill="#e2e8f0" font-size="11" font-weight="600">⚡ &lt;30ms Latency</text>
+      <rect x="0" y="0" width="105" height="26" rx="6" fill="rgba(255, 255, 255, 0.05)" stroke="rgba(255, 255, 255, 0.1)" stroke-width="1"/>
+      <text x="12" y="17" fill="#e2e8f0" font-size="11.5" font-weight="600">⚡ &lt;30ms Latency</text>
 
       <!-- Tag 2 -->
-      <rect x="115" y="0" width="105" height="24" rx="6" fill="rgba(255, 255, 255, 0.05)" stroke="rgba(255, 255, 255, 0.1)" stroke-width="1"/>
-      <text x="126" y="16" fill="#e2e8f0" font-size="11" font-weight="600">🛡️ Zero Cloud Cost</text>
+      <rect x="115" y="0" width="108" height="26" rx="6" fill="rgba(255, 255, 255, 0.05)" stroke="rgba(255, 255, 255, 0.1)" stroke-width="1"/>
+      <text x="126" y="17" fill="#e2e8f0" font-size="11.5" font-weight="600">🛡️ Zero Cloud Cost</text>
 
       <!-- Tag 3 -->
-      <rect x="230" y="0" width="118" height="24" rx="6" fill="rgba(255, 255, 255, 0.05)" stroke="rgba(255, 255, 255, 0.1)" stroke-width="1"/>
-      <text x="241" y="16" fill="#e2e8f0" font-size="11" font-weight="600">🎯 Zero Mic Locking</text>
+      <rect x="233" y="0" width="124" height="26" rx="6" fill="rgba(255, 255, 255, 0.05)" stroke="rgba(255, 255, 255, 0.1)" stroke-width="1"/>
+      <text x="244" y="17" fill="#e2e8f0" font-size="11.5" font-weight="600">🎯 Zero Mic Locking</text>
     </g>
   </g>
 
   <!-- Right: Glassmorphic Floating Pill UI Mockup -->
-  <g transform="translate(680, 125)" filter="url(#pill-shadow)">
+  <g transform="translate(680, 135)" filter="url(#pill-shadow)">
     <!-- Pill Base -->
     <rect x="0" y="0" width="450" height="74" rx="37" fill="rgba(15, 23, 42, 0.94)" stroke="url(#pill-border)" stroke-width="1.6"/>
     
