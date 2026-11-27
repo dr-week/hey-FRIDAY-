@@ -1,146 +1,139 @@
 import React, { useState } from "react";
+import {
+  ChevronDown,
+  ChevronUp,
+  CloudSun,
+  GitBranch,
+  Mic,
+  MicOff,
+  Play,
+  Radio,
+  Sparkles,
+  VolumeX,
+  Zap,
+} from "lucide-react";
 import type { ExecutionTelemetryMeta, FeedbackLogItem } from "../../types/widget.ts";
 import type { WakeGateEvaluation } from "../speech/wakeWordGate.ts";
+import type { MicDiagnosticState } from "../speech/useGoogleSpeech.ts";
+import type { VoiceProfileData } from "../calibration/voiceProfileStorage.ts";
+import { VoiceCalibrationCard } from "../calibration/VoiceCalibrationCard.tsx";
 import { FeedbackButtonBar } from "../feedback/FeedbackButtonBar.tsx";
 import { FeedbackHistoryDrawer } from "../feedback/FeedbackHistoryDrawer.tsx";
+import { StudioTopBar } from "./StudioTopBar.tsx";
 
 /**
- * Interactive Voice, Sentence Framing & Wake-Word Web Test Bench (Department: Lab / Web UI)
- * Designed for live testing on GitHub Pages and local Desktop (<140 lines).
+ * Aesthetic Glassmorphic Accordion Workspace (Department: Lab / UIUX <140 lines).
  */
-
 interface VoiceTestBenchProps {
   readonly isListening: boolean;
   readonly isArmedSession: boolean;
+  readonly micState: MicDiagnosticState;
   readonly isLocalBackend: boolean;
+  readonly profile: VoiceProfileData;
+  readonly isCalibratingWake: boolean;
   readonly lastWakeEval: WakeGateEvaluation | null;
   readonly lastSpeech: string;
   readonly lastMeta: ExecutionTelemetryMeta | null;
   readonly feedbackLogs: readonly FeedbackLogItem[];
   readonly onToggleMic: () => void;
+  readonly onStartWakeCalibration: () => void;
+  readonly onProfileUpdated: (next: VoiceProfileData) => void;
   readonly onSimulateVoiceInput: (rawText: string) => void;
   readonly onSaveFeedback: (entry: FeedbackLogItem) => void;
   readonly onClearFeedback: () => void;
 }
 
-const PRESET_VOICE_TESTS: ReadonlyArray<{ readonly label: string; readonly phrase: string }> = [
-  { label: "🎙️ Wake Only ('Hey Friday')", phrase: "Hey Friday" },
-  { label: "🔧 Phonetic Typo ('Hey Freddie check get statues')", phrase: "Hey Freddie check get statues" },
-  { label: "🔇 Wake + Mute ('Hey Friday mute audio')", phrase: "Hey Friday mute audio" },
-  { label: "🌴 Goa Weather ('Hey Friday do I need an umbrella in Goa today?')", phrase: "Hey Friday do I need an umbrella in Goa today?" },
-  { label: "⚡ 0ms Macro ('Hey Friday focus mode')", phrase: "Hey Friday focus mode" },
-  { label: "🗣️ Ambient Chatter ('I am talking to my friend on Discord')", phrase: "I am talking to my friend on Discord" },
+const QUICK_ICON_PRESETS = [
+  { icon: Radio, label: "Wake", phrase: "Hey Friday" },
+  { icon: GitBranch, label: "Typo Git", phrase: "Hey Freddie check get statues" },
+  { icon: VolumeX, label: "Mute", phrase: "Hey Friday mute audio" },
+  { icon: CloudSun, label: "Goa", phrase: "Hey Friday do I need an umbrella in Goa today?" },
+  { icon: Zap, label: "Macro", phrase: "Hey Friday focus mode" },
 ];
 
-export const VoiceTestBench: React.FC<VoiceTestBenchProps> = ({
-  isListening,
-  isArmedSession,
-  isLocalBackend,
-  lastWakeEval,
-  lastSpeech,
-  lastMeta,
-  feedbackLogs,
-  onToggleMic,
-  onSimulateVoiceInput,
-  onSaveFeedback,
-  onClearFeedback,
-}) => {
-  const [customPhrase, setCustomPhrase] = useState<string>("");
-
-  const handleCustomSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!customPhrase.trim()) return;
-    onSimulateVoiceInput(customPhrase.trim());
-  };
+export const VoiceTestBench: React.FC<VoiceTestBenchProps> = (props) => {
+  const [customPhrase, setCustomPhrase] = useState("");
+  const [openSec, setOpenSec] = useState({ calib: true, test: true, logs: false });
+  const toggleSec = (k: "calib" | "test" | "logs") => setOpenSec((p) => ({ ...p, [k]: !p[k] }));
 
   return (
-    <div className="voice-lab-card">
-      <div className="voice-lab-header">
-        <div>
-          <h2>⚡ Hey FRIDAY — Voice Framing &amp; Wake-Word Test Lab</h2>
-          <p className="voice-lab-sub">
-            Speak into your microphone or test phonetic phrases below, then use the dedicated feedback buttons to train &amp; export Laya calibration logs.
-          </p>
-        </div>
-        <div className="voice-lab-badges">
-          <span className={`env-badge ${isLocalBackend ? "local" : "pages"}`}>
-            {isLocalBackend ? "🟢 Connected: Local Bun 4141" : "🌐 Running: GitHub Pages Browser Engine"}
-          </span>
-          <span className={`wake-badge ${isArmedSession ? "armed" : isListening ? "listening" : "idle"}`}>
-            {isArmedSession
-              ? "🔥 Wake Armed (7s Follow-up Window)"
-              : isListening
-                ? "🎙️ Mic Listening ('Hey Friday')"
-                : "⏸️ Mic Paused"}
-          </span>
-        </div>
-      </div>
-
-      {/* Live Speech & Wake-Word Diagnostic Telemetry Grid */}
-      <div className="telemetry-grid">
-        <div className="telemetry-box">
-          <span className="telemetry-label">1. Raw Spoken Transcript (ASR)</span>
-          <div className="telemetry-value">{lastWakeEval?.rawText || lastMeta?.query || "Speak 'Hey Friday...'"}</div>
-        </div>
-        <div className="telemetry-box">
-          <span className="telemetry-label">2. Normalized &amp; Framed Sentence</span>
-          <div className="telemetry-value highlight">
-            {lastWakeEval?.normalizedText || lastMeta?.normalizedQuery || "—"}
-            {lastWakeEval?.wasRepaired && <span className="repaired-tag">✨ Phonetic Auto-Repaired</span>}
-          </div>
-        </div>
-        <div className="telemetry-box">
-          <span className="telemetry-label">3. Wake-Word Gate Decision</span>
-          <div className="telemetry-value">
-            <code>{lastWakeEval?.matchType || "ready"}</code>
-          </div>
-        </div>
-        <div className="telemetry-box">
-          <span className="telemetry-label">4. Laya System-1 Intent &amp; Response</span>
-          <div className="telemetry-value">
-            <strong>{lastMeta?.intent || "standby"}</strong> ({lastMeta?.latencyMs ?? 0}ms)
-            <div className="ai-reply-preview">{lastSpeech || "Ready for voice command."}</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Custom Spoken Sentence Simulator & Preset Test Buttons */}
-      <form className="simulator-form" onSubmit={handleCustomSubmit}>
-        <input
-          type="text"
-          className="sim-input"
-          value={customPhrase}
-          onChange={(e) => setCustomPhrase(e.target.value)}
-          placeholder="Type or dictate any sentence (e.g. 'Hey Friday check get statues' or 'Hey Friday')..."
-        />
-        <button type="submit" className="sim-run-btn">
-          ▶ Test Framing &amp; Wake Gate
-        </button>
-        <button type="button" className="sim-mic-btn" onClick={onToggleMic}>
-          {isListening ? "⏹ Stop Mic" : "🎙️ Start Live Mic"}
-        </button>
-      </form>
-
-      <div className="preset-chips">
-        {PRESET_VOICE_TESTS.map((p) => (
-          <button key={p.label} type="button" className="preset-chip" onClick={() => onSimulateVoiceInput(p.phrase)}>
-            {p.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Separate Dedicated Feedback Buttons (Framing, Wake-Word, Response) */}
-      <FeedbackButtonBar
-        rawSpokenText={lastWakeEval?.rawText || lastMeta?.query || ""}
-        normalizedText={lastWakeEval?.normalizedText || lastMeta?.normalizedQuery || ""}
-        detectedIntent={lastMeta?.intent || "unknown"}
-        aiResponse={lastSpeech}
-        isLocalBackend={isLocalBackend}
-        onSaveFeedback={onSaveFeedback}
+    <div className="glass-workspace">
+      <StudioTopBar
+        isLocalBackend={props.isLocalBackend}
+        isListening={props.isListening}
+        isArmedSession={props.isArmedSession}
+        micState={props.micState}
       />
 
-      {/* Recorded Feedback Dataset Table & Laya .fit() CSV Exporter */}
-      <FeedbackHistoryDrawer logs={feedbackLogs} onClear={onClearFeedback} />
+      <VoiceCalibrationCard
+        profile={props.profile}
+        isCalibratingWake={props.isCalibratingWake}
+        isOpen={openSec.calib}
+        onToggleOpen={() => toggleSec("calib")}
+        onStartWakeCalibration={props.onStartWakeCalibration}
+        onProfileUpdated={props.onProfileUpdated}
+      />
+
+      <section className="glass-accordion">
+        <button type="button" className="accordion-header" onClick={() => toggleSec("test")}>
+          <div className="accordion-title-group">
+            <Sparkles size={17} className="icon-cyan" />
+            <span>Test &amp; Rate</span>
+            {props.lastMeta && <span className="mini-pill">{props.lastMeta.intent} • {props.lastMeta.latencyMs}ms</span>}
+          </div>
+          {openSec.test ? <ChevronUp size={17} /> : <ChevronDown size={17} />}
+        </button>
+
+        {openSec.test && (
+          <div className="accordion-body">
+            <div className="compact-stat-strip">
+              <div className="stat-tile">
+                <span className="stat-tag">Heard</span>
+                <p>{props.lastWakeEval?.rawText || props.lastMeta?.query || "Click Mic & Speak"}</p>
+              </div>
+              <div className="stat-tile">
+                <span className="stat-tag">Framed {props.lastWakeEval?.wasRepaired ? "✨" : ""}</span>
+                <p className="cyan-text">{props.lastWakeEval?.normalizedText || props.lastMeta?.normalizedQuery || "—"}</p>
+              </div>
+              <div className="stat-tile">
+                <span className="stat-tag">Reply ({props.lastWakeEval?.matchType || "ready"})</span>
+                <p>{props.lastSpeech || "Standby"}</p>
+              </div>
+            </div>
+
+            <div className="test-action-bar">
+              <button type="button" className={`glass-btn primary ${props.isListening ? "active-mic" : ""}`} onClick={props.onToggleMic}>
+                {props.isListening ? <MicOff size={15} /> : <Mic size={15} />}
+                <span>{props.isListening ? "Stop" : "Speak"}</span>
+              </button>
+
+              <form className="inline-sim-form" onSubmit={(e) => { e.preventDefault(); if (customPhrase.trim()) props.onSimulateVoiceInput(customPhrase.trim()); }}>
+                <input type="text" className="glass-input-sm" value={customPhrase} onChange={(e) => setCustomPhrase(e.target.value)} placeholder="Or type phrase..." />
+                <button type="submit" className="glass-btn icon-only" title="Run Test"><Play size={14} /></button>
+              </form>
+
+              <div className="icon-preset-group">
+                {QUICK_ICON_PRESETS.map(({ icon: Icon, label, phrase }) => (
+                  <button key={label} type="button" className="glass-chip-btn" title={phrase} onClick={() => props.onSimulateVoiceInput(phrase)}>
+                    <Icon size={13} /><span>{label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <FeedbackButtonBar
+              rawSpokenText={props.lastWakeEval?.rawText || props.lastMeta?.query || ""}
+              normalizedText={props.lastWakeEval?.normalizedText || props.lastMeta?.normalizedQuery || ""}
+              detectedIntent={props.lastMeta?.intent || "unknown"}
+              aiResponse={props.lastSpeech}
+              isLocalBackend={props.isLocalBackend}
+              onSaveFeedback={props.onSaveFeedback}
+            />
+          </div>
+        )}
+      </section>
+
+      <FeedbackHistoryDrawer logs={props.feedbackLogs} isOpen={openSec.logs} onToggleOpen={() => toggleSec("logs")} onClear={props.onClearFeedback} />
     </div>
   );
 };

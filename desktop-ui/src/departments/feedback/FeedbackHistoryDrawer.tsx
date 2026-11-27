@@ -1,4 +1,12 @@
 import React from "react";
+import {
+  ChevronDown,
+  ChevronUp,
+  Database,
+  Download,
+  FileCode2,
+  Trash2,
+} from "lucide-react";
 import type { FeedbackLogItem } from "../../types/widget.ts";
 import {
   downloadFeedbackJsonl,
@@ -6,99 +14,89 @@ import {
 } from "./feedbackStorage.ts";
 
 /**
- * Feedback Training Log Viewer & Exporter (Department: Feedback / Dataset Export)
- * Displays recorded voice framing & wake-word feedback logs and exports CSV/JSONL (<95 lines).
+ * Collapsible Feedback Training Dataset Drawer (Department: Feedback / Dataset Export)
+ * Minimal icon-driven table & 1-click Laya `.fit()` CSV / JSONL export (<105 lines).
  */
 
 interface FeedbackHistoryDrawerProps {
   readonly logs: readonly FeedbackLogItem[];
+  readonly isOpen: boolean;
+  readonly onToggleOpen: () => void;
   readonly onClear: () => void;
 }
 
 export const FeedbackHistoryDrawer: React.FC<FeedbackHistoryDrawerProps> = ({
   logs,
+  isOpen,
+  onToggleOpen,
   onClear,
 }) => {
   return (
-    <div className="feedback-drawer">
-      <div className="feedback-drawer-header">
-        <div>
-          <strong>📊 Voice &amp; Wake-Word Training Feedback Logs ({logs.length})</strong>
-          <p className="feedback-sub">
-            Export directly to <code>laya_training.csv</code> for <code>laya.Agent().fit()</code> or{" "}
-            <code>training_feedback.jsonl</code>
-          </p>
-        </div>
-        <div className="feedback-export-actions">
+    <section className="glass-accordion">
+      <div className="accordion-header-row">
+        <button type="button" className="accordion-header" onClick={onToggleOpen}>
+          <div className="accordion-title-group">
+            <Database size={17} className="icon-cyan" />
+            <span>Training Logs</span>
+            <span className="mini-pill">{logs.length}</span>
+          </div>
+          {isOpen ? <ChevronUp size={17} /> : <ChevronDown size={17} />}
+        </button>
+
+        <div className="header-quick-icons">
           <button
             type="button"
-            className="fb-export-btn"
+            className="glass-btn"
+            title="Export Laya .fit() CSV Dataset"
             onClick={() => downloadLayaTrainingCsv(logs)}
             disabled={logs.length === 0}
           >
-            ⬇️ Export Laya .fit() CSV
+            <Download size={14} />
+            <span>CSV</span>
           </button>
           <button
             type="button"
-            className="fb-export-btn"
+            className="glass-btn"
+            title="Export Raw JSONL Logs"
             onClick={() => downloadFeedbackJsonl(logs)}
             disabled={logs.length === 0}
           >
-            ⬇️ Export JSONL
+            <FileCode2 size={14} />
+            <span>JSONL</span>
           </button>
           <button
             type="button"
-            className="fb-clear-btn"
+            className="glass-btn icon-only"
+            title="Clear Logs"
             onClick={onClear}
             disabled={logs.length === 0}
           >
-            🗑️ Clear
+            <Trash2 size={14} />
           </button>
         </div>
       </div>
 
-      {logs.length === 0 ? (
-        <div className="feedback-empty">
-          No feedback logged yet. Speak a command or click a preset test phrase above, then click any feedback button!
-        </div>
-      ) : (
-        <div className="feedback-table-wrap">
-          <table className="feedback-table">
-            <thead>
-              <tr>
-                <th>Spoken / Framed</th>
-                <th>Correction (Gold)</th>
-                <th>Intent (Actual → Gold)</th>
-                <th>Framing</th>
-                <th>Wake-Word</th>
-                <th>Response</th>
-              </tr>
-            </thead>
-            <tbody>
-              {logs.slice(0, 12).map((item, idx) => (
-                <tr key={item.id ?? idx}>
-                  <td>
-                    <div className="raw-cell">"{item.rawSpokenText}"</div>
-                    {item.normalizedText !== item.rawSpokenText && (
-                      <div className="norm-cell">→ "{item.normalizedText}"</div>
-                    )}
-                  </td>
-                  <td>{item.correctedText || "—"}</td>
-                  <td>
-                    <code>{item.detectedIntent}</code>
-                    {item.expectedIntent !== item.detectedIntent && (
-                      <span className="gold-arrow"> → {item.expectedIntent}</span>
-                    )}
-                  </td>
-                  <td>{item.framingStatus}</td>
-                  <td>{item.wakeWordStatus}</td>
-                  <td>{item.responseStatus}</td>
-                </tr>
+      {isOpen && (
+        <div className="accordion-body">
+          {logs.length === 0 ? (
+            <div className="empty-hint">No logs yet — rate any test above.</div>
+          ) : (
+            <div className="compact-log-list">
+              {logs.slice(0, 10).map((item, idx) => (
+                <div key={item.id ?? idx} className="compact-log-row">
+                  <span className="log-spoken">"{item.correctedText || item.normalizedText}"</span>
+                  <code className="log-intent">{item.expectedIntent}</code>
+                  <span className="log-badges">
+                    <span className={`dot-tag ${item.framingStatus}`}>{item.framingStatus}</span>
+                    <span className={`dot-tag ${item.wakeWordStatus}`}>{item.wakeWordStatus}</span>
+                    <span className={`dot-tag ${item.responseStatus}`}>{item.responseStatus}</span>
+                  </span>
+                </div>
               ))}
-            </tbody>
-          </table>
+            </div>
+          )}
         </div>
       )}
-    </div>
+    </section>
   );
 };

@@ -1,10 +1,10 @@
 import type { WakeGateMatchType } from "../../types/widget.ts";
+import { loadVoiceProfile } from "../calibration/voiceProfileStorage.ts";
 import { normalizeSpokenSentence } from "./sentenceNormalizer.ts";
 
 /**
- * Conversational Two-Turn Wake-Word Gate (Department: Speech / Wake Protocol)
- * Solves the problem where a user says "Hey Friday" (pauses) and then speaks the command,
- * or puts filler words ("so hey friday can you mute audio") before the wake word (<90 lines).
+ * Conversational Two-Turn Wake-Word Gate + Custom Voice Alias Matcher
+ * Supports user-trained wake aliases, custom phrase mappings, and Direct-Talk mode (<105 lines).
  */
 
 export interface WakeGateEvaluation {
@@ -17,9 +17,6 @@ export interface WakeGateEvaluation {
   readonly shouldArmFollowupWindow: boolean;
 }
 
-const WAKE_ONLY_REGEX = /^(?:so\s+|um\s+|uh\s+|well\s+)?(?:hey\s+friday|friday|ok\s+friday|hi\s+friday)[.!?,]*$/i;
-const WAKE_INLINE_REGEX = /(?:^|\b)(?:hey\s+friday|friday|ok\s+friday|hi\s+friday)[\s,.!?]+(.+)$/i;
-
 export function evaluateWakeWordGate(
   rawTranscript: string,
   options: {
@@ -27,10 +24,34 @@ export function evaluateWakeWordGate(
     readonly isArmedWindowActive: boolean;
   }
 ): WakeGateEvaluation {
-  const { rawText, normalizedText, wasRepaired } = normalizeSpokenSentence(rawTranscript);
+  const profile = loadVoiceProfile();
+  const { rawText, normalizedText: baseNormalized, wasRepaired: baseRepaired } =
+    normalizeSpokenSentence(rawTranscript);
 
-  // 1. User just said "Hey Friday" by itself -> Arm 6-second listening window!
-  if (WAKE_ONLY_REGEX.test(normalizedText)) {
+  let normalizedText = baseNormalized;
+  let wasRepaired = baseRepaired;
+  const lower = normalizedText.toLowerCase();
+
+  // 0. Apply user's learned custom command mappings
+  for (const mapping of profile.customMappings) {
+    if (lower.includes(mapping.spokenPhrase)) {
+      normalizedText = mapping.targetCommand;
+      wasRepaired = true;
+      break;
+    }
+  }
+
+  // Build dynamic regex from user's calibrated wake aliases
+  const escapedAliases = profile.wakeAliases
+    .map((a) => a.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+    .filter(Boolean);
+  const aliasGroup = escapedAliases.join("|") || "hey\\s+friday|friday";
+
+  const wakeOnlyRegex = new RegExp(`^(?:so\\s+|um\\s+|uh\\s+|well\\s+)?(?:${aliasGroup})[.!?,]*$`, "i");
+  const wakeInlineRegex = new RegExp(`(?:^|\\b)(?:${aliasGroup})[\\s,.!?]+(.+)$`, "i");
+
+  // 1. User just said "Hey Friday" (or their calibrated wake alias) -> Arm 8s follow-up window!
+  if (wakeOnlyRegex.test(normalizedText)) {
     return {
       accepted: false,
       commandText: "",
@@ -42,8 +63,8 @@ export function evaluateWakeWordGate(
     };
   }
 
-  // 2. Wake word + command spoken in the same sentence ("Hey Friday check git status")
-  const inlineMatch = normalizedText.match(WAKE_INLINE_REGEX);
+  // 2. Wake word + command spoken in one sentence ("Hey Friday mute audio")
+  const inlineMatch = normalizedText.match(wakeInlineRegex);
   if (inlineMatch && inlineMatch[1]) {
     return {
       accepted: true,
@@ -56,34 +77,21 @@ export function evaluateWakeWordGate(
     };
   }
 
-  // 3. Manual Push-to-Talk (Mic click or Ctrl+Shift+Space)
-  if (options.isManualTrigger) {
-    const clean = normalizedText.replace(/^(?:hey\s+)?friday[,.\s]*/i, "").trim();
+  // 3. Direct Mode (requireWakeWord === false) OR Manual Push-to-Talk OR 8s Armed Window
+  if (!profile.requireWakeWord || options.isManualTrigger || options.isArmedWindowActive) {
+    const clean = normalizedText.replace(new RegExp(`^(?:${aliasGroup})[,.\\s]*`, "i"), "").trim();
     return {
       accepted: clean.length > 0,
       commandText: clean || normalizedText,
       rawText,
       normalizedText,
       wasRepaired,
-      matchType: "manual_push_to_talk",
+      matchType: options.isArmedWindowActive ? "armed_session_followup" : "manual_push_to_talk",
       shouldArmFollowupWindow: false,
     };
   }
 
-  // 4. Armed 6-second conversational follow-up window after saying "Hey Friday"
-  if (options.isArmedWindowActive && normalizedText.length > 0) {
-    return {
-      accepted: true,
-      commandText: normalizedText,
-      rawText,
-      normalizedText,
-      wasRepaired,
-      matchType: "armed_session_followup",
-      shouldArmFollowupWindow: false,
-    };
-  }
-
-  // 5. Rejected ambient chatter (no wake word detected)
+  // 4. Strict Wake Mode enabled and no wake word matched
   return {
     accepted: false,
     commandText: "",

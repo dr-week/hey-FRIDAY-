@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from "react";
 import {
+  AlertTriangle, Bot, Check, CheckCircle2, Ear, EarOff, FileText, Save, ThumbsDown, ThumbsUp, XCircle,
+} from "lucide-react";
+import {
   ALL_FRIDAY_INTENTS,
   type FeedbackLogItem,
   type FramingFeedbackStatus,
@@ -8,8 +11,7 @@ import {
 } from "../../types/widget.ts";
 
 /**
- * Multi-Button Feedback Evaluation Bar (Department: Feedback / RLHF Controls)
- * Separate buttons for: 1) Sentence Framing, 2) Wake-Word, 3) AI Response (<140 lines).
+ * Icon-Driven Feedback Evaluation Bar (Department: Feedback / RLHF Controls <135 lines).
  */
 interface FeedbackButtonBarProps {
   readonly rawSpokenText: string;
@@ -50,8 +52,8 @@ export const FeedbackButtonBar: React.FC<FeedbackButtonBarProps> = ({
     nextResp: ResponseFeedbackStatus = responseStatus
   ) => {
     onSaveFeedback({
-      rawSpokenText: rawSpokenText || "(manual test)",
-      normalizedText: normalizedText || rawSpokenText || "(manual test)",
+      rawSpokenText: rawSpokenText || "(test)",
+      normalizedText: normalizedText || rawSpokenText || "(test)",
       correctedText,
       detectedIntent: detectedIntent || "unknown",
       expectedIntent,
@@ -65,81 +67,65 @@ export const FeedbackButtonBar: React.FC<FeedbackButtonBarProps> = ({
   };
 
   return (
-    <div className="feedback-panel">
-      <div className="feedback-panel-header">
-        <span className="feedback-title">🧪 Rate Voice Framing, Wake-Word &amp; AI Response (Training Loop)</span>
-        {savedNotice && <span className="feedback-saved-badge">✓ Logged to Training Dataset</span>}
+    <div className="icon-feedback-grid">
+      <div className="fb-card">
+        <div className="fb-card-head"><FileText size={14} className="icon-cyan" /><span>Framing</span></div>
+        <div className="fb-pill-pair">
+          <button type="button" className={`icon-pill-btn ${framingStatus === "correct" ? "good" : ""}`}
+            onClick={() => { setFramingStatus("correct"); handleSubmit("correct", wakeWordStatus, responseStatus); }}>
+            <CheckCircle2 size={15} /><span>Exact</span>
+          </button>
+          <button type="button" className={`icon-pill-btn ${framingStatus === "incorrect" ? "bad" : ""}`}
+            onClick={() => setFramingStatus("incorrect")}>
+            <XCircle size={15} /><span>Fix</span>
+          </button>
+        </div>
       </div>
 
-      <div className="feedback-row">
-        <span className="feedback-label">1. Sentence Framing:</span>
-        <button type="button" className={`fb-btn ${framingStatus === "correct" ? "active-good" : ""}`}
-          onClick={() => { setFramingStatus("correct"); handleSubmit("correct", wakeWordStatus, responseStatus); }}>
-          ✅ Framing / Text Correct
-        </button>
-        <button type="button" className={`fb-btn ${framingStatus === "incorrect" ? "active-bad" : ""}`}
-          onClick={() => setFramingStatus("incorrect")}>
-          ❌ Framing / Text Wrong
-        </button>
+      <div className="fb-card">
+        <div className="fb-card-head"><Ear size={14} className="icon-cyan" /><span>Wake Call</span></div>
+        <div className="fb-pill-pair">
+          <button type="button" className={`icon-pill-btn ${wakeWordStatus === "responded_correctly" ? "good" : ""}`}
+            onClick={() => { setWakeWordStatus("responded_correctly"); handleSubmit(framingStatus, "responded_correctly", responseStatus); }}>
+            <Ear size={15} /><span>Woke</span>
+          </button>
+          <button type="button" className={`icon-pill-btn ${wakeWordStatus === "missed_wake" ? "bad" : ""}`}
+            onClick={() => { setWakeWordStatus("missed_wake"); handleSubmit(framingStatus, "missed_wake", responseStatus); }}>
+            <EarOff size={15} /><span>Missed</span>
+          </button>
+          <button type="button" className={`icon-pill-btn ${wakeWordStatus === "false_wake" ? "warn" : ""}`}
+            onClick={() => { setWakeWordStatus("false_wake"); handleSubmit(framingStatus, "false_wake", responseStatus); }}>
+            <AlertTriangle size={15} /><span>Noise</span>
+          </button>
+        </div>
       </div>
 
-      <div className="feedback-row">
-        <span className="feedback-label">2. "Hey Friday" Wake:</span>
-        <button
-          type="button"
-          className={`fb-btn ${wakeWordStatus === "responded_correctly" ? "active-good" : ""}`}
-          onClick={() => { setWakeWordStatus("responded_correctly"); handleSubmit(framingStatus, "responded_correctly", responseStatus); }}
-        >
-          🎙️ Woke &amp; Responded OK
-        </button>
-        <button
-          type="button"
-          className={`fb-btn ${wakeWordStatus === "missed_wake" ? "active-bad" : ""}`}
-          onClick={() => { setWakeWordStatus("missed_wake"); handleSubmit(framingStatus, "missed_wake", responseStatus); }}
-        >
-          🔇 Ignored "Hey Friday"
-        </button>
-        <button
-          type="button"
-          className={`fb-btn ${wakeWordStatus === "false_wake" ? "active-warn" : ""}`}
-          onClick={() => { setWakeWordStatus("false_wake"); handleSubmit(framingStatus, "false_wake", responseStatus); }}
-        >
-          ⚠️ False Wake on Noise
-        </button>
-      </div>
-
-      <div className="feedback-row">
-        <span className="feedback-label">3. AI Response:</span>
-        <button
-          type="button"
-          className={`fb-btn ${responseStatus === "accurate" ? "active-good" : ""}`}
-          onClick={() => { setResponseStatus("accurate"); handleSubmit(framingStatus, wakeWordStatus, "accurate"); }}
-        >
-          🎯 Response Accurate
-        </button>
-        <button
-          type="button"
-          className={`fb-btn ${responseStatus === "weird_or_wrong" ? "active-bad" : ""}`}
-          onClick={() => setResponseStatus("weird_or_wrong")}
-        >
-          🤖 Responded Weird / Wrong Intent
-        </button>
+      <div className="fb-card">
+        <div className="fb-card-head">
+          <Bot size={14} className="icon-cyan" /><span>AI Reply</span>
+          {savedNotice && <Check size={14} className="icon-emerald" />}
+        </div>
+        <div className="fb-pill-pair">
+          <button type="button" className={`icon-pill-btn ${responseStatus === "accurate" ? "good" : ""}`}
+            onClick={() => { setResponseStatus("accurate"); handleSubmit(framingStatus, wakeWordStatus, "accurate"); }}>
+            <ThumbsUp size={15} /><span>Good</span>
+          </button>
+          <button type="button" className={`icon-pill-btn ${responseStatus === "weird_or_wrong" ? "bad" : ""}`}
+            onClick={() => setResponseStatus("weird_or_wrong")}>
+            <ThumbsDown size={15} /><span>Weird</span>
+          </button>
+        </div>
       </div>
 
       {(framingStatus === "incorrect" || responseStatus === "weird_or_wrong") && (
-        <div className="feedback-correction-box">
-          <input
-            type="text"
-            className="fb-input"
-            value={correctedText}
-            onChange={(e) => setCorrectedText(e.target.value)}
-            placeholder="Type what you actually spoke (Gold Transcript)..."
-          />
-          <select className="fb-select" value={expectedIntent} onChange={(e) => setExpectedIntent(e.target.value)}>
-            {ALL_FRIDAY_INTENTS.map((i) => <option key={i} value={i}>Expected: {i}</option>)}
+        <div className="fb-inline-fix">
+          <input type="text" className="glass-input-sm" value={correctedText}
+            onChange={(e) => setCorrectedText(e.target.value)} placeholder="True spoken words..." />
+          <select className="glass-select-sm" value={expectedIntent} onChange={(e) => setExpectedIntent(e.target.value)}>
+            {ALL_FRIDAY_INTENTS.map((i) => <option key={i} value={i}>{i}</option>)}
           </select>
-          <button type="button" className="fb-save-btn" onClick={() => handleSubmit(framingStatus, wakeWordStatus, responseStatus)}>
-            💾 Save Correction
+          <button type="button" className="glass-btn primary" onClick={() => handleSubmit(framingStatus, wakeWordStatus, responseStatus)}>
+            <Save size={14} /><span>Save</span>
           </button>
         </div>
       )}

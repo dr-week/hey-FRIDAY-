@@ -1,4 +1,5 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
+import { Minimize2, Sliders } from "lucide-react";
 import { PillWidget } from "./components/PillWidget.tsx";
 import { SpeechToast } from "./components/SpeechToast.tsx";
 import { useDraggablePill } from "./hooks/useDraggablePill.ts";
@@ -9,6 +10,11 @@ import {
   type WakeGateEvaluation,
 } from "./hooks/useGoogleSpeech.ts";
 import { VoiceTestBench } from "./departments/lab/VoiceTestBench.tsx";
+import {
+  learnWakeWordSample,
+  loadVoiceProfile,
+  type VoiceProfileData,
+} from "./departments/calibration/voiceProfileStorage.ts";
 import {
   clearLocalFeedbackLogs,
   loadLocalFeedbackLogs,
@@ -27,6 +33,9 @@ export default function App() {
   const [lastSpeech, setLastSpeech] = useState<string>("");
   const [lastMeta, setLastMeta] = useState<ExecutionTelemetryMeta | null>(null);
   const [lastWakeEval, setLastWakeEval] = useState<WakeGateEvaluation | null>(null);
+  const [profile, setProfile] = useState<VoiceProfileData>(() => loadVoiceProfile());
+  const [isCalibratingWake, setIsCalibratingWake] = useState<boolean>(false);
+  const isCalibratingRef = useRef<boolean>(false);
   const [feedbackLogs, setFeedbackLogs] = useState<FeedbackLogItem[]>(() => loadLocalFeedbackLogs());
   const { pos, isDocked, handleMouseDown } = useDraggablePill();
 
@@ -41,91 +50,91 @@ export default function App() {
         setLastSpeech(result.response);
         setLastMeta(
           result.meta
-            ? {
-                ...result.meta,
-                rawSpokenText: wakeEval?.rawText ?? queryText,
-                wakeMatchType: wakeEval?.matchType,
-              }
+            ? { ...result.meta, rawSpokenText: wakeEval?.rawText ?? queryText, wakeMatchType: wakeEval?.matchType }
             : null
         );
       }
     } catch {
-      setLastSpeech("Error processing command.");
+      setLastSpeech("Command error.");
     } finally {
-      setTimeout(() => setIsProcessing(false), 2000);
+      setTimeout(() => setIsProcessing(false), 1800);
     }
   }, []);
 
-  const { isListening, isArmedSession, toggleListening, startListening } = useGoogleSpeech({
+  const handleCalibrationSample = useCallback((rawSpoken: string): boolean => {
+    if (!isCalibratingRef.current) return false;
+    const updated = learnWakeWordSample(rawSpoken);
+    setProfile(updated);
+    isCalibratingRef.current = false;
+    setIsCalibratingWake(false);
+    setLastSpeech(`Learned your voice alias: "${rawSpoken.toLowerCase()}"`);
+    return true;
+  }, []);
+
+  const { isListening, isArmedSession, micState, toggleListening, startListening } = useGoogleSpeech({
     onCommandDetected: (cmd, ev) => {
       setLastWakeEval(ev);
       handleQuery(cmd, ev);
     },
     onWakeEvents: (ev) => {
       setLastWakeEval(ev);
-      if (ev.shouldArmFollowupWindow) {
-        setLastSpeech("🎙️ Hey Friday awake! Listening for your command (7s window)...");
-      } else if (ev.matchType === "rejected_no_wake") {
-        setLastSpeech(`🔇 Filtered non-wake speech: "${ev.rawText}"`);
-      }
+      if (ev.shouldArmFollowupWindow) setLastSpeech("Awake (8s) — speak command");
+      else if (ev.matchType === "rejected_no_wake") setLastSpeech(`Ignored: "${ev.rawText}"`);
     },
     onInterimTranscript: (interim) => {
       setLastMeta(null);
-      setLastSpeech(interim);
+      setLastSpeech(`🎙️ ${interim}...`);
     },
+    onCalibrationCapture: handleCalibrationSample,
   });
 
   useEffect(() => {
     startListening(false);
-    setLastSpeech("Friday ready. Say 'Hey Friday' or test voice framing in the Lab.");
+    setLastSpeech("Ready. Click Mic or Speak.");
+  }, [startListening]);
+
+  const handleStartWakeCalibration = useCallback(() => {
+    isCalibratingRef.current = true;
+    setIsCalibratingWake(true);
+    startListening(true);
+    setLastSpeech("Speak 'Hey Friday' in your normal voice...");
   }, [startListening]);
 
   const handleSimulateVoice = useCallback(
     (rawPhrase: string) => {
-      const ev = evaluateWakeWordGate(rawPhrase, {
-        isManualTrigger: false,
-        isArmedWindowActive: isArmedSession,
-      });
-      setLastWakeEval(ev);
-      if (ev.shouldArmFollowupWindow) {
-        setLastSpeech("🎙️ Wake word 'Hey Friday' matched! Armed for follow-up command.");
+      if (isCalibratingRef.current) {
+        handleCalibrationSample(rawPhrase);
         return;
       }
-      if (ev.accepted) {
-        handleQuery(ev.commandText, ev);
-      } else {
-        setLastSpeech(`🔇 Rejected by Wake Gate (missing 'Hey Friday'): "${ev.rawText}"`);
+      const ev = evaluateWakeWordGate(rawPhrase, { isManualTrigger: false, isArmedWindowActive: isArmedSession });
+      setLastWakeEval(ev);
+      if (ev.shouldArmFollowupWindow) {
+        setLastSpeech("Awake (8s) — speak command");
+        return;
       }
+      if (ev.accepted) handleQuery(ev.commandText, ev);
+      else setLastSpeech(`Blocked by Wake Gate: "${ev.rawText}"`);
     },
-    [handleQuery, isArmedSession]
+    [handleCalibrationSample, handleQuery, isArmedSession]
   );
-
-  const handleSaveFeedback = useCallback(async (entry: FeedbackLogItem) => {
-    const updated = await recordFeedbackLog(entry);
-    setFeedbackLogs(updated);
-  }, []);
-
-  const handleClearFeedback = useCallback(() => {
-    clearLocalFeedbackLogs();
-    setFeedbackLogs([]);
-  }, []);
-
-  const handleClose = useCallback(async () => {
-    await requestKillApp();
-    window.close();
-  }, []);
 
   const handleMicOrShortcut = useCallback(() => {
     requestStopSpeech();
     toggleListening();
   }, [toggleListening]);
 
+  const handleClose = useCallback(async () => {
+    await requestKillApp();
+    window.close();
+  }, []);
+
   useKeyboardShortcut({ onTriggerMic: handleMicOrShortcut, onClose: handleClose });
 
   return (
     <div className={`canvas-container ${showLab ? "lab-mode" : ""}`}>
       <button type="button" className="lab-toggle-btn" onClick={() => setShowLab((s) => !s)}>
-        {showLab ? "🫧 Compact Floating Pill Only" : "🧪 Open Voice & Feedback Test Lab"}
+        {showLab ? <Minimize2 size={14} /> : <Sliders size={14} />}
+        <span>{showLab ? "Pill Only" : "Studio"}</span>
       </button>
 
       <PillWidget
@@ -145,15 +154,20 @@ export default function App() {
         <VoiceTestBench
           isListening={isListening}
           isArmedSession={isArmedSession}
+          micState={micState}
           isLocalBackend={isLocalBackend}
+          profile={profile}
+          isCalibratingWake={isCalibratingWake}
           lastWakeEval={lastWakeEval}
           lastSpeech={lastSpeech}
           lastMeta={lastMeta}
           feedbackLogs={feedbackLogs}
           onToggleMic={handleMicOrShortcut}
+          onStartWakeCalibration={handleStartWakeCalibration}
+          onProfileUpdated={setProfile}
           onSimulateVoiceInput={handleSimulateVoice}
-          onSaveFeedback={handleSaveFeedback}
-          onClearFeedback={handleClearFeedback}
+          onSaveFeedback={async (entry) => setFeedbackLogs(await recordFeedbackLog(entry))}
+          onClearFeedback={() => { clearLocalFeedbackLogs(); setFeedbackLogs([]); }}
         />
       )}
 
