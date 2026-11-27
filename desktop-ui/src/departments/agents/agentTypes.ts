@@ -6,12 +6,14 @@
 import type { ExecutionTelemetryMeta } from "../../types/widget.ts";
 
 export type DepartmentId =
-  | "conversation" // greetings, empathy, memory, built-in skills
-  | "memory"       // learned answers database
-  | "tasks"        // Windows / desktop control (local Bun backend or browser Laya)
-  | "communication"// chatterbot-corpus phrase dictionary
-  | "brain"        // free LLMs (Chrome Nano, Gemini, Groq, OpenRouter)
-  | "knowledge";   // online search (Dictionary, DuckDuckGo, Wikipedia)
+  | "conversation"      // greetings, empathy, memory, built-in skills
+  | "agent_delegation"  // tell external AI agents / webhooks to do jobs
+  | "decisions"         // Microsoft/Windows environment decisions & safety
+  | "memory"            // learned answers database
+  | "tasks"             // Windows / desktop control (local Bun backend or browser Laya)
+  | "communication"     // chatterbot-corpus phrase dictionary
+  | "brain"             // free LLMs (Chrome Nano, Gemini, Groq, OpenRouter)
+  | "knowledge";        // online search (Dictionary, DuckDuckGo, Wikipedia)
 
 export interface AgentContext {
   readonly raw: string;

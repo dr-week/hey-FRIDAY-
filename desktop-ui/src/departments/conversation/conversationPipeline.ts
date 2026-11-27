@@ -12,6 +12,7 @@ import { DEPARTMENTS } from "../agents/departmentRegistry.ts";
 import type { RouteTraceStep } from "../agents/agentTypes.ts";
 import { isKnowledgeQuestion } from "../knowledge/webKnowledge.ts";
 import { learnKnowledge } from "../knowledge/knowledgeCache.ts";
+import { departmentDb } from "../database/departmentDb.ts";
 
 export interface PipelineResult extends QueryResult {
   readonly reframe: ReframeResult;
@@ -48,7 +49,10 @@ export async function runConversationTurn(raw: string, cbs?: SpeechCbs, depth = 
 
   if (answer?.runCommand && depth < 2) return runConversationTurn(answer.runCommand, cbs, depth + 1);
   const reply = answer?.reply ?? FRIENDLY_UNKNOWN[Math.floor(Math.random() * FRIENDLY_UNKNOWN.length)];
-  if (answer?.learn) learnKnowledge(text, reply, answer.source, dept);
+  if (answer?.learn) {
+    learnKnowledge(text, reply, answer.source, dept);
+    departmentDb.saveKnowledge({ query_pattern: text, answer: reply, category: dept, source: answer.source, confidence: 1.0, verified: false });
+  }
 
   if (!answer?.alreadySpoken) {
     stopNaturalVoice();

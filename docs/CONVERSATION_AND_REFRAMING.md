@@ -67,3 +67,34 @@ API keys are stored only in the browser's localStorage.
 - The reply is spoken exactly once, by the pipeline.
 - Each turn records which departments were tried (the `trace`).
 - **Next departments**: `agents_delegate` (send work to external agents over an MCP/webhook), `windows_decide` (actions that need confirmation), `storage` (save to Drive or OneDrive on command).
+
+## Phase 9: Access Point Hub, Structured Department Database Framework & Microsoft Decisions
+
+### 1. FRIDAY as an Access Point & Agent Delegator
+- **Access Point Orchestrator** (`departments/agents/agentDelegator.ts`):
+  - Acts as an access point to any external AI agent, MCP tool, or autonomous worker.
+  - Recognizes voice and text triggers: *"tell agent to [task]"*, *"ask agent to [task]"*, *"delegate task [task]"*.
+  - Dispatches tasks via configurable custom Webhook / MCP URL or the fallback thinking AI brain.
+  - Automatically records tasks with lifecycle states: `pending` → `running` → `completed` / `failed`.
+
+### 2. Microsoft & Windows Environment Decisions
+- **Decision Engine** (`departments/tasks/microsoftDecisions.ts`):
+  - Classifies actions by risk level (`low`, `medium`, `high`) in the Microsoft/Windows environment.
+  - Safely handles file saves (*"save this to file transcript.txt"*), exports, and script decisions.
+  - Destructive or high-risk actions prompt an interactive review approval gate before execution.
+
+### 3. Unified Department Database Framework
+- **Backend SQLite Repositories** (`src/services/db/`):
+  - `department_knowledge` (`knowledgeRepo.ts`): Learned Q&A pairs with hit counts, sources, and verification flags.
+  - `department_agent_tasks` (`agentTasksRepo.ts`): Delegated AI agent tasks with status and outputs.
+  - `department_decisions` (`decisionsRepo.ts`): Microsoft environment decisions and approval states.
+  - Coordinated by `FridayDatabase.ts` and exposed via `/api/departments/*` in `src/server/routes/departmentRoutes.ts`.
+- **Frontend Department Store** (`departments/database/departmentDb.ts`):
+  - Persistent typed client database maintaining structured collections for knowledge, agent tasks, and decisions.
+  - Auto-records answers learned from online search and thinking AI into the knowledge database.
+
+### 4. 4-Tab Functional Studio
+- 💬 **Talk**: Interactive conversation stream with disfluency reframing & audio reply.
+- ⚡ **Tasks**: One-tap quick desktop actions + Voice test bench.
+- 🤖 **Agents**: Access Point Hub (delegate tasks to other AI agents + Microsoft decision approval cards).
+- 🧠 **Brain & DB**: Department Database Explorer (search/verify learned Q&A) + Free AI keys + Google Drive sync.

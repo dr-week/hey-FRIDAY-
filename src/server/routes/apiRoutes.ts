@@ -1,6 +1,7 @@
 import type { FridayAssistant } from "../../core/friday.ts";
 import type { CrashLogger } from "../../services/crash_logger.ts";
 import { handleFeedbackRoute } from "./feedbackRoutes.ts";
+import { handleDepartmentRoute } from "./departmentRoutes.ts";
 
 export async function handleApiRoute(
   req: Request,
@@ -8,11 +9,12 @@ export async function handleApiRoute(
   friday: FridayAssistant,
   crashLogger: CrashLogger
 ): Promise<Response | null> {
-  // 0. Delegate Feedback & Training Routes (/api/feedback*)
+  // 0. Delegate Feedback & Department Routes
   const feedbackRes = await handleFeedbackRoute(req, url, friday);
-  if (feedbackRes) {
-    return feedbackRes;
-  }
+  if (feedbackRes) return feedbackRes;
+
+  const deptRes = await handleDepartmentRoute(req, url, friday);
+  if (deptRes) return deptRes;
 
   // 1. Health & Identity Check Endpoint
   if (url.pathname === "/api/health" && req.method === "GET") {

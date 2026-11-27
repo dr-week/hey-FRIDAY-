@@ -1,5 +1,6 @@
 /**
  * Department Registry — ORDER = decision priority (cheap/offline first, network last).
+ * Coordinates specialist agents for conversation, memory, tasks, external agents, decisions, and online knowledge (<115 lines).
  */
 import type { AgentDepartment } from "./agentTypes.ts";
 import { respondConversationally } from "../conversation/dialogueEngine.ts";
@@ -8,6 +9,8 @@ import { recallKnowledge } from "../knowledge/knowledgeCache.ts";
 import { searchOnline } from "../knowledge/webKnowledge.ts";
 import { thinkWithFreeAi } from "../brain/thinkingBrain.ts";
 import { sendQuery } from "../../services/api.ts";
+import { extractAgentDelegation, dispatchAgentTask } from "./agentDelegator.ts";
+import { evaluateEnvironmentDecision, executeFileSaveDecision, recordAndProposeDecision } from "../tasks/microsoftDecisions.ts";
 
 const conversation: AgentDepartment = {
   id: "conversation", label: "Conversation & skills",
@@ -15,6 +18,35 @@ const conversation: AgentDepartment = {
   handle: async ({ text }) => {
     const r = respondConversationally(text);
     return r ? { reply: r.reply, intent: r.intent, source: "dialogue_engine", runCommand: (r as any).runCommand } : null;
+  },
+};
+
+const agentDelegation: AgentDepartment = {
+  id: "agent_delegation", label: "Agent Access Point",
+  accepts: ({ text }) => extractAgentDelegation(text).isDelegation,
+  handle: async ({ text }) => {
+    const { instruction } = extractAgentDelegation(text);
+    const { reply } = await dispatchAgentTask(instruction);
+    return { reply, intent: "agent_delegated", source: "agent_delegator" };
+  },
+};
+
+const decisionsDepartment: AgentDepartment = {
+  id: "decisions", label: "Microsoft & Windows Decisions",
+  accepts: ({ text }) => evaluateEnvironmentDecision(text).isDecision,
+  handle: async ({ text, raw }) => {
+    const evalRes = evaluateEnvironmentDecision(text);
+    recordAndProposeDecision(evalRes);
+    if (evalRes.action.startsWith("Save to file:")) {
+      const filename = evalRes.action.replace("Save to file:", "").trim();
+      executeFileSaveDecision(filename, raw);
+      return { reply: `Saved transcript to ${filename} on your computer.`, intent: "save_file", source: "microsoft_decisions" };
+    }
+    return {
+      reply: `Decision proposed (${evalRes.risk} risk): "${evalRes.action}". You can review or approve it in the Agent Hub.`,
+      intent: "decision_proposed",
+      source: "microsoft_decisions",
+    };
   },
 };
 
@@ -73,5 +105,5 @@ const communicationFuzzy: AgentDepartment = {
 };
 
 export const DEPARTMENTS: AgentDepartment[] = [
-  conversation, memory, tasks, communicationExact, brain, knowledge, communicationFuzzy,
+  conversation, agentDelegation, decisionsDepartment, memory, tasks, communicationExact, brain, knowledge, communicationFuzzy,
 ];

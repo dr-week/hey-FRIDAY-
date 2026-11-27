@@ -2,20 +2,29 @@ import { Database } from "bun:sqlite";
 import type { FeedbackLogEntry, UserPreferences, VoiceMacro } from "../../core/types.ts";
 import { MacroRepository } from "./macroRepo.ts";
 import { FeedbackRepository } from "./feedbackRepo.ts";
+import { KnowledgeRepository } from "./knowledgeRepo.ts";
+import { AgentTasksRepository } from "./agentTasksRepo.ts";
+import { DecisionsRepository } from "./decisionsRepo.ts";
 
 /**
  * Primary SQLite Database Coordinator (Department: Persistence)
- * Delegates macro and feedback sub-departments while managing core preferences (<115 lines).
+ * Coordinates departmental repositories: macros, feedback, knowledge, agents, decisions (<135 lines).
  */
 export class FridayDatabase {
   private readonly db: Database;
-  private readonly macros: MacroRepository;
-  private readonly feedback: FeedbackRepository;
+  public readonly macros: MacroRepository;
+  public readonly feedback: FeedbackRepository;
+  public readonly knowledge: KnowledgeRepository;
+  public readonly agentTasks: AgentTasksRepository;
+  public readonly decisions: DecisionsRepository;
 
   constructor(filePath: string = "data/friday.sqlite") {
     this.db = new Database(filePath);
     this.macros = new MacroRepository(this.db);
     this.feedback = new FeedbackRepository(this.db);
+    this.knowledge = new KnowledgeRepository(this.db);
+    this.agentTasks = new AgentTasksRepository(this.db);
+    this.decisions = new DecisionsRepository(this.db);
     this.initTables();
   }
 
@@ -53,6 +62,9 @@ export class FridayDatabase {
 
     this.macros.initTable();
     this.feedback.initTable();
+    this.knowledge.initTable();
+    this.agentTasks.initTable();
+    this.decisions.initTable();
   }
 
   public getPreferences(): UserPreferences {

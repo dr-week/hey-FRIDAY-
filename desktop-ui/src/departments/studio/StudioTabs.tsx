@@ -1,22 +1,26 @@
 /**
  * Studio Tabs — splits the Studio by FUNCTION:
- *   💬 Talk   — conversation stream + quick chat
- *   ⚡ Tasks  — one-tap desktop tasks + voice test bench
- *   🧠 Brain  — free AI providers, cloud training data
+ *   💬 Talk       — conversation stream & reframing
+ *   ⚡ Tasks      — one-tap desktop tasks + voice test bench
+ *   🤖 Agents     — access point delegator & Microsoft environment decisions
+ *   🧠 Brain & DB — structured department database + free AI keys & cloud storage
  */
 import { useState, type ReactNode } from "react";
-import { Brain, MessageCircle, Zap } from "lucide-react";
+import { Bot, Database, MessageCircle, Zap } from "lucide-react";
 import { ConversationStream } from "../conversation/ConversationStream.tsx";
 import { BrainAndCloudCard } from "../brain/BrainAndCloudCard.tsx";
 import { QuickTaskGrid } from "./QuickTaskGrid.tsx";
+import { AgentHubCard } from "../agents/AgentHubCard.tsx";
+import { DepartmentDbCard } from "../database/DepartmentDbCard.tsx";
 import "./StudioTabs.css";
 
-type Tab = "talk" | "tasks" | "brain";
+type Tab = "talk" | "tasks" | "agents" | "brain";
 
-const TABS: { id: Tab; icon: typeof Brain; label: string }[] = [
+const TABS: { id: Tab; icon: typeof Bot; label: string }[] = [
   { id: "talk", icon: MessageCircle, label: "Talk" },
   { id: "tasks", icon: Zap, label: "Tasks" },
-  { id: "brain", icon: Brain, label: "Brain" },
+  { id: "agents", icon: Bot, label: "Agents" },
+  { id: "brain", icon: Database, label: "Brain & DB" },
 ];
 
 interface Props {
@@ -39,7 +43,13 @@ export function StudioTabs({ onSend, labPanel }: Props) {
       </nav>
       {tab === "talk" && <ConversationStream onSend={onSend} />}
       {tab === "tasks" && (<><QuickTaskGrid onRun={onSend} />{labPanel}</>)}
-      {tab === "brain" && <BrainAndCloudCard />}
+      {tab === "agents" && <AgentHubCard />}
+      {tab === "brain" && (
+        <>
+          <DepartmentDbCard />
+          <BrainAndCloudCard />
+        </>
+      )}
     </div>
   );
 }

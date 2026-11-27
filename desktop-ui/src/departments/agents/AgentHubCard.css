@@ -1,0 +1,37 @@
+/* Agent Hub Zone — Emerald → Indigo glass */
+.agent-hub-zone {
+  margin: 12px 0; padding: 12px 14px; border-radius: 18px; color: #ecfdf5;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.16), rgba(99, 102, 241, 0.18));
+  border: 1px solid rgba(52, 211, 153, 0.3); backdrop-filter: blur(14px);
+}
+.agent-hub-zone header { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.agent-hub-zone h3 { flex: 1; margin: 0; font-size: 14px; font-weight: 600; }
+.hub-badge { font-size: 11px; padding: 2px 7px; border-radius: 99px; background: rgba(52, 211, 153, 0.25); color: #a7f3d0; }
+.hub-cfg-btn { background: none; border: none; color: inherit; cursor: pointer; opacity: 0.7; }
+.hub-cfg-btn:hover { opacity: 1; }
+.agent-hub-zone .rot { transform: rotate(180deg); }
+.hub-body { margin-top: 10px; display: flex; flex-direction: column; gap: 10px; }
+.hub-config-box { display: flex; flex-direction: column; gap: 4px; padding: 8px; border-radius: 10px; background: rgba(0, 0, 0, 0.25); font-size: 11px; }
+.hub-config-box input { padding: 6px 8px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.15); background: rgba(255, 255, 255, 0.08); color: #fff; font-size: 11px; }
+.hub-dispatch-form { display: flex; gap: 6px; }
+.hub-dispatch-form input { flex: 1; padding: 8px 10px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.15); background: rgba(255, 255, 255, 0.08); color: #fff; font-size: 12px; }
+.hub-dispatch-form button { display: inline-flex; align-items: center; gap: 4px; padding: 0 12px; border: none; border-radius: 10px; cursor: pointer; color: #fff; font-size: 12px; font-weight: 600; background: linear-gradient(135deg, #10b981, #6366f1); }
+.hub-decisions-sub, .hub-tasks-sub { display: flex; flex-direction: column; gap: 6px; }
+.hub-decisions-sub h4, .hub-tasks-sub h4 { margin: 4px 0; font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 6px; color: #6ee7b7; }
+.decision-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; border-radius: 10px; background: rgba(255, 255, 255, 0.06); font-size: 11px; }
+.decision-info { display: flex; flex-direction: column; gap: 1px; }
+.decision-info small { opacity: 0.7; }
+.decision-actions { display: flex; gap: 4px; }
+.btn-approve { background: #10b981; border: none; border-radius: 6px; color: #fff; padding: 4px 8px; cursor: pointer; }
+.btn-reject { background: #ef4444; border: none; border-radius: 6px; color: #fff; padding: 4px 8px; cursor: pointer; }
+.status-pill { font-size: 10px; text-transform: uppercase; padding: 2px 6px; border-radius: 99px; font-weight: 700; }
+.status-pill.pending { background: rgba(245, 158, 11, 0.3); color: #fcd34d; }
+.status-pill.running { background: rgba(59, 130, 246, 0.3); color: #93c5fd; }
+.status-pill.completed, .status-pill.approved { background: rgba(16, 185, 129, 0.3); color: #6ee7b7; }
+.status-pill.failed, .status-pill.rejected { background: rgba(239, 68, 68, 0.3); color: #fca5a5; }
+.tasks-scroll { display: flex; flex-direction: column; gap: 6px; max-height: 220px; overflow-y: auto; }
+.task-item-card { display: flex; flex-direction: column; gap: 2px; padding: 6px 8px; border-radius: 10px; background: rgba(0, 0, 0, 0.2); font-size: 11px; }
+.task-top { display: flex; justify-content: space-between; align-items: center; }
+.task-inst { opacity: 0.75; }
+.task-res { margin: 2px 0 0; color: #a7f3d0; font-size: 11px; }
+.hub-empty { font-size: 11px; opacity: 0.6; text-align: center; margin: 4px 0; }
