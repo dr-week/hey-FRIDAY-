@@ -26,7 +26,9 @@ import {
   speakWithNaturalVoice,
 } from "./departments/sound/naturalTtsEngine.ts";
 import type { AssistantPresenceState } from "./departments/sound/PresenceAndSoundBar.tsx";
-import { sendQuery, requestKillApp, requestStopSpeech } from "./services/api.ts";
+import { runConversationTurn } from "./departments/conversation/conversationPipeline.ts";
+import { ConversationStream } from "./departments/conversation/ConversationStream.tsx";
+import { requestKillApp, requestStopSpeech } from "./services/api.ts";
 import type { ExecutionTelemetryMeta, FeedbackLogItem } from "./types/widget.ts";
 import "./App.css";
 import "./departments/lab/VoiceLab.css";
@@ -54,7 +56,7 @@ export default function App() {
     setLastSpeech(`"${queryText}"`);
     playEarcon("listen");
     try {
-      const result = await sendQuery(queryText, {
+      const result = await runConversationTurn(queryText, {
         onSpeakStart: () => setIsSpeaking(true),
         onSpeakEnd: () => setIsSpeaking(false),
       });
@@ -64,7 +66,7 @@ export default function App() {
         setLastSpeech(result.response);
         setLastMeta(
           result.meta
-            ? { ...result.meta, rawSpokenText: wakeEval?.rawText ?? queryText, wakeMatchType: wakeEval?.matchType }
+            ? { ...result.meta, normalizedQuery: result.resolvedText, rawSpokenText: wakeEval?.rawText ?? queryText, wakeMatchType: wakeEval?.matchType }
             : null
         );
       }
@@ -172,6 +174,7 @@ export default function App() {
         onClose={handleClose}
       />
 
+      {showLab && <ConversationStream onSend={(t) => handleQuery(t)} />}
       {showLab && (
         <VoiceTestBench
           isListening={isListening}
