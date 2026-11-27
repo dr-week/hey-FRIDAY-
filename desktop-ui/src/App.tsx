@@ -31,6 +31,7 @@ import type { ExecutionTelemetryMeta, FeedbackLogItem } from "./types/widget.ts"
 import "./App.css";
 import "./departments/lab/VoiceLab.css";
 import "./departments/sound/PresenceOrb.css";
+import "./departments/collab/CollabZones.css";
 
 export default function App() {
   const isWebPagesDefault = typeof window !== "undefined" && window.location.port !== "4141";

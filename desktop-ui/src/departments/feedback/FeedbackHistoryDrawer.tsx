@@ -14,10 +14,8 @@ import {
 } from "./feedbackStorage.ts";
 
 /**
- * Collapsible Feedback Training Dataset Drawer (Department: Feedback / Dataset Export)
- * Minimal icon-driven table & 1-click Laya `.fit()` CSV / JSONL export (<105 lines).
+ * Collapsible Feedback Training Dataset Drawer (Amber-Gold Gradient Zone <105 lines).
  */
-
 interface FeedbackHistoryDrawerProps {
   readonly logs: readonly FeedbackLogItem[];
   readonly isOpen: boolean;
@@ -32,13 +30,18 @@ export const FeedbackHistoryDrawer: React.FC<FeedbackHistoryDrawerProps> = ({
   onClear,
 }) => {
   return (
-    <section className="glass-accordion">
+    <section className="glass-accordion zone-amber">
       <div className="accordion-header-row">
         <button type="button" className="accordion-header" onClick={onToggleOpen}>
           <div className="accordion-title-group">
-            <Database size={17} className="icon-cyan" />
-            <span>Training Logs</span>
-            <span className="mini-pill">{logs.length}</span>
+            <span className="zone-icon-badge amber">
+              <Database size={16} />
+            </span>
+            <div className="zone-heading">
+              <span className="zone-kicker">03 • DATASET &amp; RLHF LOGS</span>
+              <span>Training Logs &amp; Laya Export</span>
+            </div>
+            <span className="mini-pill">{logs.length} rows</span>
           </div>
           {isOpen ? <ChevronUp size={17} /> : <ChevronDown size={17} />}
         </button>
@@ -46,7 +49,7 @@ export const FeedbackHistoryDrawer: React.FC<FeedbackHistoryDrawerProps> = ({
         <div className="header-quick-icons">
           <button
             type="button"
-            className="glass-btn"
+            className="glass-btn amber-btn"
             title="Export Laya .fit() CSV Dataset"
             onClick={() => downloadLayaTrainingCsv(logs)}
             disabled={logs.length === 0}
@@ -79,7 +82,7 @@ export const FeedbackHistoryDrawer: React.FC<FeedbackHistoryDrawerProps> = ({
       {isOpen && (
         <div className="accordion-body">
           {logs.length === 0 ? (
-            <div className="empty-hint">No logs yet — rate any test above.</div>
+            <div className="empty-hint">No logs yet — rate any spoken test in Zone 02 above.</div>
           ) : (
             <div className="compact-log-list">
               {logs.slice(0, 10).map((item, idx) => (

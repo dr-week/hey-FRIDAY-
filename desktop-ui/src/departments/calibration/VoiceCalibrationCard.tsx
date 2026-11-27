@@ -10,7 +10,7 @@ import {
 } from "./voiceProfileStorage.ts";
 
 /**
- * Collapsible Voice Calibration & Accent Studio (Department: Calibration <130 lines).
+ * Collapsible Voice Calibration & Accent Studio (Emerald-Mint Gradient Zone <125 lines).
  */
 interface VoiceCalibrationCardProps {
   readonly profile: VoiceProfileData;
@@ -40,11 +40,16 @@ export const VoiceCalibrationCard: React.FC<VoiceCalibrationCardProps> = ({
   };
 
   return (
-    <section className="glass-accordion">
+    <section className="glass-accordion zone-emerald">
       <button type="button" className="accordion-header" onClick={onToggleOpen}>
         <div className="accordion-title-group">
-          <AudioLines size={18} className="icon-cyan" />
-          <span>Voice Calibration &amp; Accent</span>
+          <span className="zone-icon-badge emerald">
+            <AudioLines size={16} />
+          </span>
+          <div className="zone-heading">
+            <span className="zone-kicker">01 • PERSONAL VOICE &amp; ACCENT</span>
+            <span>Voice Calibration &amp; Wake Aliases</span>
+          </div>
           <span className="mini-pill">{profile.wakeAliases.length} aliases</span>
           <span className="mini-pill">{profile.speechLang}</span>
         </div>
@@ -54,7 +59,7 @@ export const VoiceCalibrationCard: React.FC<VoiceCalibrationCardProps> = ({
       {isOpen && (
         <div className="accordion-body">
           <div className="calib-controls-row">
-            <button type="button" className={`glass-btn primary ${isCalibratingWake ? "pulsing" : ""}`} onClick={onStartWakeCalibration}>
+            <button type="button" className={`glass-btn emerald-btn ${isCalibratingWake ? "pulsing" : ""}`} onClick={onStartWakeCalibration}>
               <Mic size={15} />
               <span>{isCalibratingWake ? "Speak 'Hey Friday' Now..." : "Teach My Voice"}</span>
             </button>
@@ -70,7 +75,7 @@ export const VoiceCalibrationCard: React.FC<VoiceCalibrationCardProps> = ({
             </button>
 
             <div className="lang-select-wrap" title="Speech Accent Model">
-              <Globe size={14} className="icon-muted" />
+              <Globe size={14} className="icon-emerald" />
               <select
                 className="glass-select-mini"
                 value={profile.speechLang}
@@ -88,7 +93,7 @@ export const VoiceCalibrationCard: React.FC<VoiceCalibrationCardProps> = ({
           </div>
 
           <div className="alias-chip-list">
-            <Sparkles size={13} className="icon-cyan" />
+            <Sparkles size={13} className="icon-emerald" />
             {profile.wakeAliases.map((alias) => (
               <span key={alias} className="alias-tag">"{alias}"</span>
             ))}
@@ -105,7 +110,7 @@ export const VoiceCalibrationCard: React.FC<VoiceCalibrationCardProps> = ({
               <option value="focus mode">→ focus mode</option>
               <option value="lock computer">→ lock PC</option>
             </select>
-            <button type="submit" className="glass-btn" title="Save Custom Voice Mapping">
+            <button type="submit" className="glass-btn emerald-btn" title="Save Custom Voice Mapping">
               <Plus size={15} /><span>Map</span>
             </button>
           </form>

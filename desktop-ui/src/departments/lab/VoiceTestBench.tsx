@@ -17,8 +17,10 @@ import type { WakeGateEvaluation } from "../speech/wakeWordGate.ts";
 import type { MicDiagnosticState } from "../speech/useGoogleSpeech.ts";
 import type { VoiceProfileData } from "../calibration/voiceProfileStorage.ts";
 import { VoiceCalibrationCard } from "../calibration/VoiceCalibrationCard.tsx";
+import { CollabAndTrainCard } from "../collab/CollabAndTrainCard.tsx";
 import { FeedbackButtonBar } from "../feedback/FeedbackButtonBar.tsx";
 import { FeedbackHistoryDrawer } from "../feedback/FeedbackHistoryDrawer.tsx";
+import { downloadLayaTrainingCsv } from "../feedback/feedbackStorage.ts";
 import {
   type AssistantPresenceState,
   PresenceAndSoundBar,
@@ -26,7 +28,8 @@ import {
 import { StudioTopBar } from "./StudioTopBar.tsx";
 
 /**
- * Aesthetic Glassmorphic Accordion Workspace (Department: Lab / UIUX <145 lines).
+ * Multi-Gradient Functional Workspace (Department: Lab / UIUX <145 lines).
+ * Each department has its own signature color gradient & collapsible zone.
  */
 interface VoiceTestBenchProps {
   readonly isListening: boolean;
@@ -58,8 +61,9 @@ const QUICK_ICON_PRESETS = [
 
 export const VoiceTestBench: React.FC<VoiceTestBenchProps> = (props) => {
   const [customPhrase, setCustomPhrase] = useState("");
-  const [openSec, setOpenSec] = useState({ calib: false, test: true, logs: false });
-  const toggleSec = (k: "calib" | "test" | "logs") => setOpenSec((p) => ({ ...p, [k]: !p[k] }));
+  const [openSec, setOpenSec] = useState({ calib: false, test: true, logs: false, collab: true });
+  const toggleSec = (k: "calib" | "test" | "logs" | "collab") =>
+    setOpenSec((p) => ({ ...p, [k]: !p[k] }));
 
   return (
     <div className="glass-workspace">
@@ -70,12 +74,10 @@ export const VoiceTestBench: React.FC<VoiceTestBenchProps> = (props) => {
         micState={props.micState}
       />
 
-      {/* Live Presence Indicator Orb + Soothing Sound Effects & Natural TTS Selector */}
-      <PresenceAndSoundBar
-        presence={props.presence}
-        onToggleWakeState={props.onToggleMic}
-      />
+      {/* Zone 00: Live Presence Orb & Soothing Sound Studio */}
+      <PresenceAndSoundBar presence={props.presence} onToggleWakeState={props.onToggleMic} />
 
+      {/* Zone 01 (Emerald-Mint Gradient): Voice Calibration & Accent */}
       <VoiceCalibrationCard
         profile={props.profile}
         isCalibratingWake={props.isCalibratingWake}
@@ -85,11 +87,17 @@ export const VoiceTestBench: React.FC<VoiceTestBenchProps> = (props) => {
         onProfileUpdated={props.onProfileUpdated}
       />
 
-      <section className="glass-accordion">
+      {/* Zone 02 (Sky-Sapphire Gradient): Test Framing & Rate */}
+      <section className="glass-accordion zone-sky">
         <button type="button" className="accordion-header" onClick={() => toggleSec("test")}>
           <div className="accordion-title-group">
-            <Sparkles size={17} className="icon-cyan" />
-            <span>Test &amp; Rate</span>
+            <span className="zone-icon-badge sky">
+              <Sparkles size={16} />
+            </span>
+            <div className="zone-heading">
+              <span className="zone-kicker">02 • LIVE TESTING &amp; FRAMING</span>
+              <span>Test Voice &amp; Rate AI Response</span>
+            </div>
             {props.lastMeta && <span className="mini-pill">{props.lastMeta.intent} • {props.lastMeta.latencyMs}ms</span>}
           </div>
           {openSec.test ? <ChevronUp size={17} /> : <ChevronDown size={17} />}
@@ -144,7 +152,16 @@ export const VoiceTestBench: React.FC<VoiceTestBenchProps> = (props) => {
         )}
       </section>
 
+      {/* Zone 03 (Amber-Gold Gradient): Training Logs & CSV Export */}
       <FeedbackHistoryDrawer logs={props.feedbackLogs} isOpen={openSec.logs} onToggleOpen={() => toggleSec("logs")} onClear={props.onClearFeedback} />
+
+      {/* Zone 04 (Rose-Coral Gradient): Collab, Free GPU Training & Data Grants */}
+      <CollabAndTrainCard
+        logCount={props.feedbackLogs.length}
+        isOpen={openSec.collab}
+        onToggleOpen={() => toggleSec("collab")}
+        onExportCsv={() => downloadLayaTrainingCsv(props.feedbackLogs)}
+      />
     </div>
   );
 };
