@@ -9,6 +9,7 @@ import { addTurn, resolveFollowUp, updateSlots } from "./conversationMemory.ts";
 import { respondConversationally } from "./dialogueEngine.ts";
 import { sendQuery, type QueryResult } from "../../services/api.ts";
 import { thinkWithFreeAi } from "../brain/thinkingBrain.ts";
+import { matchCorpus } from "./communicationCorpus.ts";
 import { speakWithNaturalVoice, stopNaturalVoice } from "../sound/naturalTtsEngine.ts";
 
 export interface PipelineResult extends QueryResult {
@@ -51,11 +52,15 @@ export async function runConversationTurn(raw: string, cbs?: SpeechCbs): Promise
   } else {
     result = await sendQuery(resolvedText, cbs);
     if (result.meta?.intent === "unknown") {
-      const brain = await thinkWithFreeAi(resolvedText);
-      const reply = brain?.text ?? FRIENDLY_UNKNOWN[Math.floor(Math.random() * FRIENDLY_UNKNOWN.length)];
+      const exact = await matchCorpus(resolvedText, 0.85);
+      const brain = exact ? null : await thinkWithFreeAi(resolvedText);
+      const fuzzy = exact ?? (brain ? null : await matchCorpus(resolvedText, 0.5));
+      const reply = brain?.text ?? fuzzy?.reply ?? FRIENDLY_UNKNOWN[Math.floor(Math.random() * FRIENDLY_UNKNOWN.length)];
+      const intent = brain ? "ai_thinking" : fuzzy ? `chat_${fuzzy.category}` : "unknown";
+      const modelUsed = brain?.provider ?? (fuzzy ? "communication_corpus" : result.meta.modelUsed);
       stopNaturalVoice();
       speakWithNaturalVoice(reply, { onStart: cbs?.onSpeakStart, onEnd: cbs?.onSpeakEnd });
-      result = { ...result, response: reply, meta: { ...result.meta, response: reply, intent: brain ? "ai_thinking" : "unknown", modelUsed: brain?.provider ?? result.meta.modelUsed } };
+      result = { ...result, response: reply, meta: { ...result.meta, response: reply, intent, modelUsed } };
     }
   }
 

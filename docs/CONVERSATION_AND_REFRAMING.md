@@ -43,3 +43,9 @@ Other free options to add later: Hugging Face Inference, Cloudflare Workers AI, 
 **Training data** (`departments/storage/`): one-click JSONL download, or upload to **Google Drive** (`My Drive/HeyFRIDAY-Training`) using the minimal `drive.file` scope.
 Later: a Hugging Face Datasets repo for sharing data publicly, plus GitHub Gist or Releases.
 API keys are stored only in the browser's localStorage.
+
+## Phase 7: Communication dictionary + UI split by function
+- **Phrase dictionary**: `desktop-ui/public/corpus/communication.json` holds 1,766 question → answer pairs from [gunthercox/chatterbot-corpus](https://github.com/gunthercox/chatterbot-corpus) (BSD-3-Clause license). It covers greetings, conversations, emotion, humor, bot profile, AI, computers, coding, tech support, psychology, food and health. The matcher is `conversation/communicationCorpus.ts`.
+- **What answers when FRIDAY doesn't recognize a command**: a near-exact dictionary match first, then the free AI services, then a looser dictionary match, then a friendly "didn't get that".
+- **Studio tabs** (`departments/studio/`): 💬 Talk (violet→teal), ⚡ Tasks (sky→cyan icon grid plus the test bench), 🧠 Brain (amber→indigo).
+- **More open datasets to add next**: Microsoft personality chit-chat (MIT license), DailyDialog, EmpatheticDialogues, Hugging Face `bavard/personachat_truecased`.

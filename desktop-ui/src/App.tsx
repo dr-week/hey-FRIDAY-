@@ -27,8 +27,7 @@ import {
 } from "./departments/sound/naturalTtsEngine.ts";
 import type { AssistantPresenceState } from "./departments/sound/PresenceAndSoundBar.tsx";
 import { runConversationTurn } from "./departments/conversation/conversationPipeline.ts";
-import { BrainAndCloudCard } from "./departments/brain/BrainAndCloudCard.tsx";
-import { ConversationStream } from "./departments/conversation/ConversationStream.tsx";
+import { StudioTabs } from "./departments/studio/StudioTabs.tsx";
 import { requestKillApp, requestStopSpeech } from "./services/api.ts";
 import type { ExecutionTelemetryMeta, FeedbackLogItem } from "./types/widget.ts";
 import "./App.css";
@@ -175,10 +174,8 @@ export default function App() {
         onClose={handleClose}
       />
 
-      {showLab && <ConversationStream onSend={(t) => handleQuery(t)} />}
-      {showLab && <BrainAndCloudCard />}
       {showLab && (
-        <VoiceTestBench
+        <StudioTabs onSend={(t) => handleQuery(t)} labPanel={<VoiceTestBench
           isListening={isListening}
           isArmedSession={isArmedSession}
           presence={presence}
@@ -196,7 +193,7 @@ export default function App() {
           onSimulateVoiceInput={handleSimulateVoice}
           onSaveFeedback={async (entry) => setFeedbackLogs(await recordFeedbackLog(entry))}
           onClearFeedback={() => { clearLocalFeedbackLogs(); setFeedbackLogs([]); }}
-        />
+        />} />
       )}
 
       {!showLab && <SpeechToast text={lastSpeech} meta={lastMeta} />}
