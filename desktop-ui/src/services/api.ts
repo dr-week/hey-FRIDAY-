@@ -1,5 +1,10 @@
 import type { ApiResponse, ExecutionTelemetryMeta } from "../types/widget.ts";
 import { evaluateInBrowserLaya } from "../departments/classifier/browserLayaClassifier.ts";
+import {
+  humanizeAssistantReply,
+  speakWithNaturalVoice,
+  stopNaturalVoice,
+} from "../departments/sound/naturalTtsEngine.ts";
 
 const API_BASE = "http://127.0.0.1:4141";
 
@@ -9,25 +14,16 @@ export interface QueryResult {
   readonly isLocalBackend: boolean;
 }
 
-function speakInBrowserFallback(text: string): void {
-  if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
-  try {
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    const voices = window.speechSynthesis.getVoices();
-    const ziraOrFemale = voices.find((v) => /zira|female|google|english/i.test(v.name));
-    if (ziraOrFemale) utterance.voice = ziraOrFemale;
-    utterance.rate = 1.05;
-    window.speechSynthesis.speak(utterance);
-  } catch {
-    // Ignore browser speech errors
+export async function sendQuery(
+  queryText: string,
+  speechCallbacks?: {
+    readonly onSpeakStart?: () => void;
+    readonly onSpeakEnd?: () => void;
   }
-}
-
-export async function sendQuery(queryText: string): Promise<QueryResult> {
+): Promise<QueryResult> {
   try {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 1600);
+    const timer = setTimeout(() => controller.abort(), 1400);
     const res = await fetch(`${API_BASE}/api/query`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -45,26 +41,25 @@ export async function sendQuery(queryText: string): Promise<QueryResult> {
       };
     }
   } catch {
-    // Local port 4141 offline (e.g. hosted on GitHub Pages) -> fallback to in-browser System-1
+    // Local port 4141 offline (hosted on GitHub Pages) -> fallback to in-browser System-1
   }
 
   const browserRes = evaluateInBrowserLaya(queryText);
-  speakInBrowserFallback(browserRes.response);
+  const conversationalReply = humanizeAssistantReply(browserRes.response, browserRes.meta.intent);
+  speakWithNaturalVoice(conversationalReply, {
+    onStart: speechCallbacks?.onSpeakStart,
+    onEnd: speechCallbacks?.onSpeakEnd,
+  });
+
   return {
-    response: browserRes.response,
-    meta: browserRes.meta,
+    response: conversationalReply,
+    meta: { ...browserRes.meta, response: conversationalReply },
     isLocalBackend: false,
   };
 }
 
 export async function requestStopSpeech(): Promise<void> {
-  if (typeof window !== "undefined" && "speechSynthesis" in window) {
-    try {
-      window.speechSynthesis.cancel();
-    } catch {
-      // Ignore
-    }
-  }
+  stopNaturalVoice();
   try {
     await fetch(`${API_BASE}/api/speech/stop`, { method: "POST" });
   } catch {

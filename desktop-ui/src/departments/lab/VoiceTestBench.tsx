@@ -19,14 +19,19 @@ import type { VoiceProfileData } from "../calibration/voiceProfileStorage.ts";
 import { VoiceCalibrationCard } from "../calibration/VoiceCalibrationCard.tsx";
 import { FeedbackButtonBar } from "../feedback/FeedbackButtonBar.tsx";
 import { FeedbackHistoryDrawer } from "../feedback/FeedbackHistoryDrawer.tsx";
+import {
+  type AssistantPresenceState,
+  PresenceAndSoundBar,
+} from "../sound/PresenceAndSoundBar.tsx";
 import { StudioTopBar } from "./StudioTopBar.tsx";
 
 /**
- * Aesthetic Glassmorphic Accordion Workspace (Department: Lab / UIUX <140 lines).
+ * Aesthetic Glassmorphic Accordion Workspace (Department: Lab / UIUX <145 lines).
  */
 interface VoiceTestBenchProps {
   readonly isListening: boolean;
   readonly isArmedSession: boolean;
+  readonly presence: AssistantPresenceState;
   readonly micState: MicDiagnosticState;
   readonly isLocalBackend: boolean;
   readonly profile: VoiceProfileData;
@@ -53,7 +58,7 @@ const QUICK_ICON_PRESETS = [
 
 export const VoiceTestBench: React.FC<VoiceTestBenchProps> = (props) => {
   const [customPhrase, setCustomPhrase] = useState("");
-  const [openSec, setOpenSec] = useState({ calib: true, test: true, logs: false });
+  const [openSec, setOpenSec] = useState({ calib: false, test: true, logs: false });
   const toggleSec = (k: "calib" | "test" | "logs") => setOpenSec((p) => ({ ...p, [k]: !p[k] }));
 
   return (
@@ -63,6 +68,12 @@ export const VoiceTestBench: React.FC<VoiceTestBenchProps> = (props) => {
         isListening={props.isListening}
         isArmedSession={props.isArmedSession}
         micState={props.micState}
+      />
+
+      {/* Live Presence Indicator Orb + Soothing Sound Effects & Natural TTS Selector */}
+      <PresenceAndSoundBar
+        presence={props.presence}
+        onToggleWakeState={props.onToggleMic}
       />
 
       <VoiceCalibrationCard
@@ -104,7 +115,7 @@ export const VoiceTestBench: React.FC<VoiceTestBenchProps> = (props) => {
             <div className="test-action-bar">
               <button type="button" className={`glass-btn primary ${props.isListening ? "active-mic" : ""}`} onClick={props.onToggleMic}>
                 {props.isListening ? <MicOff size={15} /> : <Mic size={15} />}
-                <span>{props.isListening ? "Stop" : "Speak"}</span>
+                <span>{props.isListening ? "Sleep" : "Wake Mic"}</span>
               </button>
 
               <form className="inline-sim-form" onSubmit={(e) => { e.preventDefault(); if (customPhrase.trim()) props.onSimulateVoiceInput(customPhrase.trim()); }}>

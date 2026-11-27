@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { Minimize2, Sliders } from "lucide-react";
 import { PillWidget } from "./components/PillWidget.tsx";
 import { SpeechToast } from "./components/SpeechToast.tsx";
@@ -20,16 +20,24 @@ import {
   loadLocalFeedbackLogs,
   recordFeedbackLog,
 } from "./departments/feedback/feedbackStorage.ts";
+import { playEarcon } from "./departments/sound/soothingSoundEngine.ts";
+import {
+  getCuteWakeGreeting,
+  speakWithNaturalVoice,
+} from "./departments/sound/naturalTtsEngine.ts";
+import type { AssistantPresenceState } from "./departments/sound/PresenceAndSoundBar.tsx";
 import { sendQuery, requestKillApp, requestStopSpeech } from "./services/api.ts";
 import type { ExecutionTelemetryMeta, FeedbackLogItem } from "./types/widget.ts";
 import "./App.css";
 import "./departments/lab/VoiceLab.css";
+import "./departments/sound/PresenceOrb.css";
 
 export default function App() {
   const isWebPagesDefault = typeof window !== "undefined" && window.location.port !== "4141";
   const [showLab, setShowLab] = useState<boolean>(isWebPagesDefault);
   const [isLocalBackend, setIsLocalBackend] = useState<boolean>(!isWebPagesDefault);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
+  const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
   const [lastSpeech, setLastSpeech] = useState<string>("");
   const [lastMeta, setLastMeta] = useState<ExecutionTelemetryMeta | null>(null);
   const [lastWakeEval, setLastWakeEval] = useState<WakeGateEvaluation | null>(null);
@@ -43,10 +51,15 @@ export default function App() {
     setIsProcessing(true);
     setLastMeta(null);
     setLastSpeech(`"${queryText}"`);
+    playEarcon("listen");
     try {
-      const result = await sendQuery(queryText);
+      const result = await sendQuery(queryText, {
+        onSpeakStart: () => setIsSpeaking(true),
+        onSpeakEnd: () => setIsSpeaking(false),
+      });
       setIsLocalBackend(result.isLocalBackend);
       if (result.response) {
+        playEarcon("reply");
         setLastSpeech(result.response);
         setLastMeta(
           result.meta
@@ -55,9 +68,10 @@ export default function App() {
         );
       }
     } catch {
+      playEarcon("gentle_error");
       setLastSpeech("Command error.");
     } finally {
-      setTimeout(() => setIsProcessing(false), 1800);
+      setTimeout(() => setIsProcessing(false), 1200);
     }
   }, []);
 
@@ -67,67 +81,74 @@ export default function App() {
     setProfile(updated);
     isCalibratingRef.current = false;
     setIsCalibratingWake(false);
-    setLastSpeech(`Learned your voice alias: "${rawSpoken.toLowerCase()}"`);
+    playEarcon("success");
+    const msg = `Learned your voice alias: ${rawSpoken.toLowerCase()}`;
+    setLastSpeech(msg);
+    speakWithNaturalVoice(msg, { onStart: () => setIsSpeaking(true), onEnd: () => setIsSpeaking(false) });
     return true;
   }, []);
 
   const { isListening, isArmedSession, micState, toggleListening, startListening } = useGoogleSpeech({
-    onCommandDetected: (cmd, ev) => {
-      setLastWakeEval(ev);
-      handleQuery(cmd, ev);
-    },
+    onCommandDetected: (cmd, ev) => { setLastWakeEval(ev); handleQuery(cmd, ev); },
     onWakeEvents: (ev) => {
       setLastWakeEval(ev);
-      if (ev.shouldArmFollowupWindow) setLastSpeech("Awake (8s) — speak command");
-      else if (ev.matchType === "rejected_no_wake") setLastSpeech(`Ignored: "${ev.rawText}"`);
+      if (ev.shouldArmFollowupWindow) {
+        playEarcon("wake");
+        const greet = getCuteWakeGreeting();
+        setLastSpeech(`✨ ${greet}`);
+        speakWithNaturalVoice(greet, { onStart: () => setIsSpeaking(true), onEnd: () => setIsSpeaking(false) });
+      } else if (ev.matchType === "rejected_no_wake") {
+        setLastSpeech(`Ignored: "${ev.rawText}"`);
+      }
     },
-    onInterimTranscript: (interim) => {
-      setLastMeta(null);
-      setLastSpeech(`🎙️ ${interim}...`);
-    },
+    onInterimTranscript: (interim) => { setLastMeta(null); setLastSpeech(`🎙️ ${interim}...`); },
     onCalibrationCapture: handleCalibrationSample,
   });
 
+  const presence: AssistantPresenceState = useMemo(() => {
+    if (isSpeaking) return "speaking";
+    if (isProcessing) return "thinking";
+    if (isArmedSession) return "awake";
+    if (isListening) return "listening";
+    return "sleeping";
+  }, [isArmedSession, isListening, isProcessing, isSpeaking]);
+
   useEffect(() => {
     startListening(false);
-    setLastSpeech("Ready. Click Mic or Speak.");
+    setLastSpeech("Ready. Tap Orb or Mic to wake.");
   }, [startListening]);
 
   const handleStartWakeCalibration = useCallback(() => {
     isCalibratingRef.current = true;
     setIsCalibratingWake(true);
+    playEarcon("wake");
     startListening(true);
     setLastSpeech("Speak 'Hey Friday' in your normal voice...");
   }, [startListening]);
 
-  const handleSimulateVoice = useCallback(
-    (rawPhrase: string) => {
-      if (isCalibratingRef.current) {
-        handleCalibrationSample(rawPhrase);
-        return;
-      }
-      const ev = evaluateWakeWordGate(rawPhrase, { isManualTrigger: false, isArmedWindowActive: isArmedSession });
-      setLastWakeEval(ev);
-      if (ev.shouldArmFollowupWindow) {
-        setLastSpeech("Awake (8s) — speak command");
-        return;
-      }
-      if (ev.accepted) handleQuery(ev.commandText, ev);
-      else setLastSpeech(`Blocked by Wake Gate: "${ev.rawText}"`);
-    },
-    [handleCalibrationSample, handleQuery, isArmedSession]
-  );
+  const handleSimulateVoice = useCallback((rawPhrase: string) => {
+    if (isCalibratingRef.current) { handleCalibrationSample(rawPhrase); return; }
+    const ev = evaluateWakeWordGate(rawPhrase, { isManualTrigger: false, isArmedWindowActive: isArmedSession });
+    setLastWakeEval(ev);
+    if (ev.shouldArmFollowupWindow) {
+      playEarcon("wake");
+      const greet = getCuteWakeGreeting();
+      setLastSpeech(`✨ ${greet}`);
+      speakWithNaturalVoice(greet, { onStart: () => setIsSpeaking(true), onEnd: () => setIsSpeaking(false) });
+      return;
+    }
+    if (ev.accepted) handleQuery(ev.commandText, ev);
+    else { playEarcon("gentle_error"); setLastSpeech(`Sleeping — say 'Hey Friday' first`); }
+  }, [handleCalibrationSample, handleQuery, isArmedSession]);
 
   const handleMicOrShortcut = useCallback(() => {
     requestStopSpeech();
+    setIsSpeaking(false);
+    playEarcon(isListening ? "sleep" : "wake");
     toggleListening();
-  }, [toggleListening]);
+  }, [isListening, toggleListening]);
 
-  const handleClose = useCallback(async () => {
-    await requestKillApp();
-    window.close();
-  }, []);
-
+  const handleClose = useCallback(async () => { await requestKillApp(); window.close(); }, []);
   useKeyboardShortcut({ onTriggerMic: handleMicOrShortcut, onClose: handleClose });
 
   return (
@@ -139,7 +160,7 @@ export default function App() {
 
       <PillWidget
         isListening={isListening || isArmedSession}
-        isProcessing={isProcessing}
+        isProcessing={isProcessing || isSpeaking}
         isDocked={isDocked}
         pos={pos}
         onMouseDown={handleMouseDown}
@@ -154,6 +175,7 @@ export default function App() {
         <VoiceTestBench
           isListening={isListening}
           isArmedSession={isArmedSession}
+          presence={presence}
           micState={micState}
           isLocalBackend={isLocalBackend}
           profile={profile}
