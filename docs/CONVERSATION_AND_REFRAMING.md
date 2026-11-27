@@ -98,3 +98,27 @@ API keys are stored only in the browser's localStorage.
 - ⚡ **Tasks**: One-tap quick desktop actions + Voice test bench.
 - 🤖 **Agents**: Access Point Hub (delegate tasks to other AI agents + Microsoft decision approval cards).
 - 🧠 **Brain & DB**: Department Database Explorer (search/verify learned Q&A) + Free AI keys + Google Drive sync.
+
+## Phase 10: Android APK Release, Browser Extension & Multi-Platform Showcase
+
+### 1. Improved Scripts Architecture
+- `scripts/supervisor/`:
+  - `start_friday.ps1` (66 lines): Single-instance supervisor killing lingering port 4141 processes, isolated Hey Friday app windows, and python processes.
+  - `start_friday.bat` (23 lines): Safe double-clickable launcher.
+- `scripts/apk/`:
+  - `build_apk.sh` (54 lines): Automated build tool using `aapt2`, `javac`, `d8`, `zipalign`, and `apksigner`.
+- `scripts/extension/`:
+  - `build_extension.sh` (20 lines): Packages the Manifest V3 browser extension into a zip for distribution.
+
+### 2. Android Mobile APK (`android/`)
+- Native lightweight WebView container with audio permission grants and zero-latency audio configuration.
+- Packaged as a signed universal APK (`hey-friday-latest.apk`) in `desktop-ui/public/downloads/`.
+
+### 3. Browser Extension (`browser-extension/`)
+- Manifest V3 architecture with floating on-page trigger pill and popup interface.
+- Communicates directly with local Hey Friday daemon on port 4141 or connects to GitHub Pages.
+
+### 4. Live Showcase & Downloads Hub (`desktop-ui/src/departments/showcase/`)
+- Integrated into the 5th tab (**Downloads**) of the Hey Friday Web Studio.
+- Direct downloads for both Android APK (`hey-friday-latest.apk`) and Browser Extension (`hey-friday-extension.zip`).
+- CI/CD release workflow via `.github/workflows/build-release.yml`.

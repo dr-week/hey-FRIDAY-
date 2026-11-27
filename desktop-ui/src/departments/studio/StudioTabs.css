@@ -16,6 +16,7 @@
 .tab-tasks .studio-nav button.on { color: #fff; background: linear-gradient(135deg, #0ea5e9, #22d3ee); }
 .tab-agents .studio-nav button.on { color: #fff; background: linear-gradient(135deg, #10b981, #6366f1); }
 .tab-brain .studio-nav button.on { color: #fff; background: linear-gradient(135deg, #f59e0b, #6366f1); }
+.tab-releases .studio-nav button.on { color: #fff; background: linear-gradient(135deg, #ec4899, #8b5cf6); }
 
 .task-zone {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 8px;

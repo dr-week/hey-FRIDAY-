@@ -1,0 +1,47 @@
+name: Build Android APK and Extension Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Build Android APK Release
+        run: |
+          chmod +x scripts/apk/build_apk.sh
+          ./scripts/apk/build_apk.sh
+
+      - name: Package Browser Extension
+        run: |
+          chmod +x scripts/extension/build_extension.sh
+          ./scripts/extension/build_extension.sh
+
+      - name: Create GitHub Release with Assets
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            desktop-ui/public/downloads/hey-friday-latest.apk
+            desktop-ui/public/downloads/hey-friday-extension.zip
+          draft: false
+          prerelease: false
+          generate_release_notes: true

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Hey FRIDAY</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-wrap">
+    <div class="popup-head">
+      <span class="orb"></span>
+      <h2>Hey FRIDAY</h2>
+      <span id="backend-status" class="badge">Checking...</span>
+    </div>
+    <p class="subtitle">Zero-latency desktop & web voice AI</p>
+
+    <div class="quick-input">
+      <input type="text" id="query-input" placeholder="Ask or speak command..." />
+      <button id="send-btn">➔</button>
+    </div>
+
+    <div id="output-box" class="output">Ready. Tap Studio to open full Lab.</div>
+
+    <div class="popup-actions">
+      <button id="open-studio" class="btn-studio">Open FRIDAY Studio</button>
+      <button id="open-apk" class="btn-apk">📱 Android APK</button>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
