@@ -19,6 +19,8 @@ export async function sendQuery(
   speechCallbacks?: {
     readonly onSpeakStart?: () => void;
     readonly onSpeakEnd?: () => void;
+    /** When true, the caller (agent router) speaks the final reply itself. */
+    readonly silent?: boolean;
   }
 ): Promise<QueryResult> {
   try {
@@ -46,7 +48,7 @@ export async function sendQuery(
 
   const browserRes = evaluateInBrowserLaya(queryText);
   const conversationalReply = humanizeAssistantReply(browserRes.response, browserRes.meta.intent);
-  speakWithNaturalVoice(conversationalReply, {
+  if (!speechCallbacks?.silent) speakWithNaturalVoice(conversationalReply, {
     onStart: speechCallbacks?.onSpeakStart,
     onEnd: speechCallbacks?.onSpeakEnd,
   });

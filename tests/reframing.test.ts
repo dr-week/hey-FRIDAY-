@@ -19,3 +19,12 @@ test("calculator", () => {
   expect(mathSkill("what is 48 times 16")?.reply).toContain("768");
   expect(mathSkill("20 percent of 150")?.reply).toContain("30");
 });
+
+import { toSearchTopic, isKnowledgeQuestion } from "../desktop-ui/src/departments/knowledge/webKnowledge.ts";
+
+test("knowledge question detection + topic extraction", () => {
+  expect(isKnowledgeQuestion("who is APJ Abdul Kalam")).toBe(true);
+  expect(isKnowledgeQuestion("mute audio")).toBe(false);
+  expect(toSearchTopic("who is APJ Abdul Kalam?")).toBe("APJ Abdul Kalam");
+  expect(toSearchTopic("tell me about black holes")).toBe("black holes");
+});

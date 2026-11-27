@@ -49,3 +49,21 @@ API keys are stored only in the browser's localStorage.
 - **What answers when FRIDAY doesn't recognize a command**: a near-exact dictionary match first, then the free AI services, then a looser dictionary match, then a friendly "didn't get that".
 - **Studio tabs** (`departments/studio/`): 💬 Talk (violet→teal), ⚡ Tasks (sky→cyan icon grid plus the test bench), 🧠 Brain (amber→indigo).
 - **More open datasets to add next**: Microsoft personality chit-chat (MIT license), DailyDialog, EmpatheticDialogues, Hugging Face `bavard/personachat_truecased`.
+
+## Phase 8: FRIDAY as an "access point" that hands requests to department agents
+`departments/agents/` is a supervisor/router setup, modeled on CrewAI/LangGraph supervisors and semantic-router. FRIDAY offers each request to departments in a fixed order. Free, offline ones go first; network ones go last.
+
+| # | Department | What it handles | Data / API |
+|---|---|---|---|
+| 1 | conversation | Chat, empathy, memory, time, maths, timers, notes | `dialogueEngine`, `assistantSkills` |
+| 2 | memory | Answers she already learned | `knowledge/knowledgeCache.ts` (localStorage, max 500) |
+| 3 | tasks | Windows/desktop control | Local Bun backend or the in-browser Laya command classifier |
+| 4 | communication | Near-exact match in the phrase dictionary | chatterbot-corpus, 2,305 pairs from 20 categories |
+| 5 | brain | Free AI models | Chrome Nano → Gemini → Groq → OpenRouter |
+| 6 | knowledge | Online lookup, for questions only | dictionaryapi.dev → DuckDuckGo Instant Answer → Wikipedia (no keys, browser-safe) |
+| 7 | communication~ | Looser match in the phrase dictionary | chatterbot-corpus |
+
+- Answers from the brain or knowledge departments are saved to memory, so the next time the same question is answered instantly and offline.
+- The reply is spoken exactly once, by the pipeline.
+- Each turn records which departments were tried (the `trace`).
+- **Next departments**: `agents_delegate` (send work to external agents over an MCP/webhook), `windows_decide` (actions that need confirmation), `storage` (save to Drive or OneDrive on command).
