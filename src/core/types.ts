@@ -26,18 +26,71 @@ export interface DecisionQuery {
   readonly timestamp: number;
 }
 
+export interface LayaIntentAnswer {
+  readonly choice: FridayIntent;
+  readonly confidence?: number;
+  readonly predictionSet?: readonly FridayIntent[];
+  readonly abstain?: boolean;
+  readonly unbound?: boolean;
+  readonly route?: "auto" | "review";
+}
+
+export interface LayaSafetyGateAnswer {
+  readonly isDestructive: boolean;
+  readonly probability: number;
+}
+
 export interface LayaAnswers {
-  readonly intent: {
-    readonly choice: FridayIntent;
-    readonly confidence?: number;
-  };
+  readonly intent: LayaIntentAnswer;
+  readonly safetyGate?: LayaSafetyGateAnswer;
 }
 
 export interface LayaDecisionResult {
+  readonly requestId?: string;
   readonly text: string;
+  readonly normalizedText?: string;
   readonly answers: LayaAnswers;
   readonly modelUsed: string;
   readonly latencyMs: number;
+}
+
+export interface VoiceMacro {
+  readonly id?: number;
+  readonly triggerPhrase: string;
+  readonly steps: readonly string[];
+  readonly description: string;
+  readonly createdAt?: string;
+}
+
+export interface QueryExecutionMeta {
+  readonly query: string;
+  readonly normalizedQuery?: string;
+  readonly intent: FridayIntent | "voice_macro";
+  readonly response: string;
+  readonly latencyMs: number;
+  readonly modelUsed: string;
+  readonly route: "auto" | "review";
+  readonly isDestructive: boolean;
+}
+
+export type FramingFeedbackStatus = "correct" | "incorrect" | "unrated";
+export type WakeWordFeedbackStatus = "responded_correctly" | "missed_wake" | "false_wake" | "unrated";
+export type ResponseFeedbackStatus = "accurate" | "weird_or_wrong" | "unrated";
+
+export interface FeedbackLogEntry {
+  readonly id?: number;
+  readonly rawSpokenText: string;
+  readonly normalizedText: string;
+  readonly correctedText?: string;
+  readonly detectedIntent: string;
+  readonly expectedIntent: string;
+  readonly aiResponse: string;
+  readonly framingStatus: FramingFeedbackStatus;
+  readonly wakeWordStatus: WakeWordFeedbackStatus;
+  readonly responseStatus: ResponseFeedbackStatus;
+  readonly notes?: string;
+  readonly source?: "web-pages" | "desktop-local";
+  readonly createdAt?: string;
 }
 
 export interface WeatherData {
