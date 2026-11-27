@@ -27,6 +27,7 @@ import {
 } from "./departments/sound/naturalTtsEngine.ts";
 import type { AssistantPresenceState } from "./departments/sound/PresenceAndSoundBar.tsx";
 import { runConversationTurn } from "./departments/conversation/conversationPipeline.ts";
+import { BrainAndCloudCard } from "./departments/brain/BrainAndCloudCard.tsx";
 import { ConversationStream } from "./departments/conversation/ConversationStream.tsx";
 import { requestKillApp, requestStopSpeech } from "./services/api.ts";
 import type { ExecutionTelemetryMeta, FeedbackLogItem } from "./types/widget.ts";
@@ -175,6 +176,7 @@ export default function App() {
       />
 
       {showLab && <ConversationStream onSend={(t) => handleQuery(t)} />}
+      {showLab && <BrainAndCloudCard />}
       {showLab && (
         <VoiceTestBench
           isListening={isListening}

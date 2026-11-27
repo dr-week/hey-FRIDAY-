@@ -8,6 +8,7 @@ import { reframeUtterance, type ReframeResult } from "../reframing/grammarRefram
 import { addTurn, resolveFollowUp, updateSlots } from "./conversationMemory.ts";
 import { respondConversationally } from "./dialogueEngine.ts";
 import { sendQuery, type QueryResult } from "../../services/api.ts";
+import { thinkWithFreeAi } from "../brain/thinkingBrain.ts";
 import { speakWithNaturalVoice, stopNaturalVoice } from "../sound/naturalTtsEngine.ts";
 
 export interface PipelineResult extends QueryResult {
@@ -50,10 +51,11 @@ export async function runConversationTurn(raw: string, cbs?: SpeechCbs): Promise
   } else {
     result = await sendQuery(resolvedText, cbs);
     if (result.meta?.intent === "unknown") {
-      const reply = FRIENDLY_UNKNOWN[Math.floor(Math.random() * FRIENDLY_UNKNOWN.length)];
+      const brain = await thinkWithFreeAi(resolvedText);
+      const reply = brain?.text ?? FRIENDLY_UNKNOWN[Math.floor(Math.random() * FRIENDLY_UNKNOWN.length)];
       stopNaturalVoice();
       speakWithNaturalVoice(reply, { onStart: cbs?.onSpeakStart, onEnd: cbs?.onSpeakEnd });
-      result = { ...result, response: reply, meta: { ...result.meta, response: reply } };
+      result = { ...result, response: reply, meta: { ...result.meta, response: reply, intent: brain ? "ai_thinking" : "unknown", modelUsed: brain?.provider ?? result.meta.modelUsed } };
     }
   }
 
