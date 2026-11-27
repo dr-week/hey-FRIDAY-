@@ -8,8 +8,10 @@
 
 [![CI Tests](https://img.shields.io/badge/Bun_Tests-100%25_Passing-brightgreen?style=for-the-badge&logo=bun&logoColor=white)](https://bun.sh)
 [![Engine](https://img.shields.io/badge/Decision_Engine-Laya_System--1-blueviolet?style=for-the-badge&logo=pytorch&logoColor=white)](https://github.com/NandhaKishorM/laya)
+[![Android APK](https://img.shields.io/badge/Android_APK-v1.0.0_Ready-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://github.com/dr-week/hey-FRIDAY-/releases)
+[![Browser Extension](https://img.shields.io/badge/Chrome_Extension-MV3-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white)](https://github.com/dr-week/hey-FRIDAY-/releases)
 [![Latency](https://img.shields.io/badge/Inference_Speed-%3C30ms-cyan?style=for-the-badge&logo=speedtest&logoColor=white)](#performance-benchmarks)
-[![Platform](https://img.shields.io/badge/Platform-Windows_11_%2F_10-0078D6?style=for-the-badge&logo=windows&logoColor=white)](#system-architecture)
+[![Platform](https://img.shields.io/badge/Platform-Windows_11_%2F_10_%7C_Android-0078D6?style=for-the-badge&logo=windows&logoColor=white)](#system-architecture)
 [![Lab](https://img.shields.io/badge/Lab-Danger_Labs-amber?style=for-the-badge)](#about-danger-labs)
 [![License](https://img.shields.io/badge/License-MIT-emerald?style=for-the-badge)](#license)
 
@@ -18,6 +20,7 @@
 </p>
 
 [🌐 Live Web Test Lab (GitHub Pages)](https://dr-week.github.io/hey-FRIDAY-/) •
+[📦 Releases & Downloads (APK / Extension)](https://github.com/dr-week/hey-FRIDAY-/releases) •
 [Key Features](#-key-features) •
 [Interface & Screenshots](#-desktop-interface) •
 [Architecture](#-system-architecture) •
@@ -83,6 +86,8 @@ Engineered by **Danger Labs**, Hey FRIDAY replaces token-generation loops with [
 |:---|:---|:---|
 | **System-1 Decision Engine** | Sub-30ms Laya Multi-Head Router (`choice` + `noul`) | Zero token streaming lag; parallel safety gate & conformal `route` |
 | **Direct Win32 Bun FFI** | `bun:ffi` `user32.dll` (`keybd_event`, `LockWorkStation`) | Sub-0.2ms native OS execution without cold PowerShell startup overhead |
+| **Android Mobile APK** | Native WebView container + direct audio permissions | Portable Hey FRIDAY intelligence on Android devices with zero latency |
+| **Browser Extension** | Manifest V3 floating trigger pill + quick popup | Seamless integration into Google Chrome and Chromium browsers |
 | **0ms Learned Voice Macros** | SQLite `voice_macros` (`focus mode`, `standup prep`) | Replays multi-step OS & developer workflows at 0ms |
 | **Magnetic Wall Docking** | 70px Screen Perimeter Snapping | Automatically anchors and flattens to screen borders |
 | **WebAudio FFT Visualizer** | 60fps `AnalyserNode` 7-Bar Frequency Waveform | Real-time acoustic reactivity with interim speech preview & latency badges |
@@ -182,6 +187,34 @@ scripts\start_friday.bat
 
 ---
 
+## 📱 Android Mobile App & Browser Extension
+
+Hey FRIDAY is available beyond the desktop overlay across mobile and web environments:
+
+### 1. Android Mobile APK (`android/`)
+* **Download**: Grab `hey-friday-latest.apk` directly from [Releases](https://github.com/dr-week/hey-FRIDAY-/releases) or from the in-app **Downloads** studio tab.
+* **Architecture**: Standalone Android app with native WebView container, high-performance WebAudio microphone permissions, and instant speech recognition.
+* **Build from Source**:
+  ```bash
+  chmod +x scripts/apk/build_apk.sh
+  ./scripts/apk/build_apk.sh
+  ```
+
+### 2. Browser Extension (`browser-extension/`)
+* **Download**: Grab `hey-friday-extension.zip` directly from [Releases](https://github.com/dr-week/hey-FRIDAY-/releases).
+* **Install in Chrome / Brave / Edge**:
+  1. Extract `hey-friday-extension.zip`.
+  2. Open `chrome://extensions/` and enable **Developer mode**.
+  3. Click **Load unpacked** and select the unzipped directory.
+  4. Access Hey FRIDAY anywhere with the floating trigger pill or toolbar popup.
+* **Build from Source**:
+  ```bash
+  chmod +x scripts/extension/build_extension.sh
+  ./scripts/extension/build_extension.sh
+  ```
+
+---
+
 ## 🎙️ Voice Calibration & Wake-Word Protocol
 
 Hey FRIDAY implements a dual-gate acoustic verification pipeline:
@@ -244,21 +277,33 @@ bun test
 
 ### Coverage Report
 ```text
-bun test (Hey FRIDAY v2.0 Suite)
+bun test (Hey FRIDAY Test Suite)
+
+tests/departments.test.ts:
+  ✓ agent delegation extraction
+  ✓ microsoft environment decisions evaluation
+  ✓ department database repositories (SQLite)
+
+tests/reframing.test.ts:
+  ✓ self-correction keeps the repair clause
+  ✓ broken grammar maps to a clean frame
+  ✓ calculator
+  ✓ knowledge question detection + topic extraction
 
 src/tests/friday.test.ts:
   ✓ Database & Persistence Layer (C-SQLite) > Read default preferences cleanly
   ✓ Database & Persistence Layer (C-SQLite) > Record and query decisions with strict types
   ✓ Database & Persistence Layer (C-SQLite) > Store and match learned voice macros at 0ms
+  ✓ Database & Persistence Layer (C-SQLite) > Voice framing, wake-word, and response feedback logs
   ✓ Windows Native OS Control & Weather Entity Resolution > Hardware metrics retrieval (RAM & Battery)
   ✓ Windows Native OS Control & Weather Entity Resolution > Dynamically extract spoken city coordinates
   ✓ Crash Logger & Failure Recovery > Structured JSON failure telemetry
   ✓ End-to-End FridayAssistant Intent Execution > Laya System-1 sub-30ms multi-head routing & macros
   ✓ End-to-End FridayAssistant Intent Execution > Concurrent LayaEngine queries via requestId correlation
 
- 8 pass
+ 16 pass
  0 fail
- 33 expect() assertions checked [100% passing]
+ 59 expect() calls [100% passing]
 ```
 
 ---
@@ -267,14 +312,26 @@ src/tests/friday.test.ts:
 
 ```text
 heyFRIDAY/
+├── .github/workflows/               # GitHub Actions CI/CD (build-release.yml)
+├── android/                         # Android Mobile App (Java + WebView + Audio)
+│   ├── src/com/heyfriday/app/       # MainActivity.java, FridayChromeClient.java
+│   ├── AndroidManifest.xml          # Audio permissions & orientation configuration
+│   └── build/                       # Built APK outputs (classes.dex, hey-friday-release.apk)
+├── browser-extension/               # Chrome / Edge Manifest V3 Extension
+│   ├── manifest.json                # Permissions & content script definitions
+│   ├── popup/                       # Popup UI (popup.html, popup.js, popup.css)
+│   ├── background/                  # Background service worker (background.js)
+│   └── content/                     # On-page floating trigger pill (content.js, overlay.css)
 ├── bridge/
 │   └── laya_bridge.py               # Laya System-1 multi-head decision bridge (choice + noul safety gate)
 ├── data/
 │   └── .gitkeep                     # Retains folder hierarchy; SQLite/profile caches excluded
-├── desktop-ui/                      # React 19 + Strict TypeScript Vite frontend
+├── desktop-ui/                      # React 19 + Strict TypeScript Vite frontend & studio
+│   ├── public/downloads/            # Downloadable distribution assets (APK & extension ZIP)
 │   ├── src/
 │   │   ├── components/              # PillWidget, MicButton, WebAudio FFT WaveformVisualizer, SpeechToast
-│   │   ├── hooks/                   # useDraggablePill (magnetic wall-snapping), useGoogleSpeech (interim+final)
+│   │   ├── departments/             # Studio tabs: Talk, Tasks, Agents Hub, Brain/DB, Showcase Downloads
+│   │   ├── hooks/                   # useDraggablePill (magnetic wall-snapping), useGoogleSpeech
 │   │   ├── services/                # api.ts (REST client with telemetry meta & barge-in stop)
 │   │   ├── App.css                  # Hardware-accelerated CSS & audio frequency visualizer
 │   │   └── App.tsx                  # Root frontend orchestrator
@@ -283,18 +340,23 @@ heyFRIDAY/
 ├── docs/
 │   ├── banner.svg                   # High-resolution vector project banner
 │   ├── ui-pill-widget.png           # Live desktop interface screenshot
+│   ├── CONVERSATION_AND_REFRAMING.md# Architecture & phased milestone plans
 │   ├── SIMILAR_PROJECTS.md          # Comparative benchmark of similar GitHub projects & architectures
 │   ├── ROADMAP_NEXT_LEVEL.md        # Codebase audit, v2.0 architecture & phased engineering roadmap
 │   └── CRASH_RECOVERY.md            # Self-healing architecture & failure logging
 ├── scripts/
-│   ├── start_friday.bat             # Windows single-instance supervisor launcher
-│   ├── start_friday.ps1             # PowerShell process lifecycle & collision prevention
+│   ├── apk/build_apk.sh             # Android APK build automation
+│   ├── extension/build_extension.sh # Extension zip packager
+│   ├── supervisor/                  # Process supervisor & collision prevention
+│   ├── start_friday.bat             # Root Windows launcher
+│   ├── start_friday.ps1             # Root PowerShell launcher
 │   └── crash_analyzer.ts            # CLI analyzer for crash log reports
 ├── src/
 │   ├── core/                        # Friday orchestrator, correlated requestId IPC & typed intent engine
-│   ├── server/                      # Bun HTTP backend (port 4141: /api/query, /api/macros, /api/history)
-│   ├── services/                    # Speech (Zira + barge-in), Bun FFI user32.dll controls, Geocoding, SQLite
-│   └── tests/                       # Bun test suite (8 tests, 33 assertions, 100% pass rate)
+│   ├── server/                      # Bun HTTP backend (port 4141: /api/query, /api/macros, /api/departments/*)
+│   ├── services/                    # Speech (Zira + barge-in), Bun FFI user32.dll, SQLite database repos
+│   └── tests/                       # Friday core Bun test suite
+├── tests/                           # Departments and speech reframing Bun test suites
 ├── .gitignore                       # Production filtering (.venv, node_modules, .browser_profile)
 ├── README.md                        # Enterprise project documentation
 ├── package.json                     # Bun lifecycle scripts
