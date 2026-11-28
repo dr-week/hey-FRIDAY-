@@ -11,6 +11,7 @@ import { thinkWithFreeAi } from "../brain/thinkingBrain.ts";
 import { sendQuery } from "../../services/api.ts";
 import { extractAgentDelegation, dispatchAgentTask } from "./agentDelegator.ts";
 import { evaluateEnvironmentDecision, executeFileSaveDecision, recordAndProposeDecision } from "../tasks/microsoftDecisions.ts";
+import { matchOnlineSkill } from "../knowledge/onlineSkills.ts";
 
 const conversation: AgentDepartment = {
   id: "conversation", label: "Conversation & skills",
@@ -78,6 +79,15 @@ const communicationExact: AgentDepartment = {
   },
 };
 
+const onlineSkills: AgentDepartment = {
+  id: "online_skills", label: "Live Online Skills",
+  accepts: () => true,
+  handle: async ({ text }) => {
+    const res = await matchOnlineSkill(text);
+    return res ? { reply: res.reply, intent: res.intent, source: res.source, learn: true } : null;
+  },
+};
+
 const brain: AgentDepartment = {
   id: "brain", label: "Free AI thinking",
   accepts: () => true,
@@ -105,5 +115,5 @@ const communicationFuzzy: AgentDepartment = {
 };
 
 export const DEPARTMENTS: AgentDepartment[] = [
-  conversation, agentDelegation, decisionsDepartment, memory, tasks, communicationExact, brain, knowledge, communicationFuzzy,
+  conversation, agentDelegation, decisionsDepartment, memory, tasks, communicationExact, onlineSkills, brain, knowledge, communicationFuzzy,
 ];

@@ -12,6 +12,7 @@ export type DepartmentId =
   | "memory"            // learned answers database
   | "tasks"             // Windows / desktop control (local Bun backend or browser Laya)
   | "communication"     // chatterbot-corpus phrase dictionary
+  | "online_skills"     // live web APIs (HackerNews, Currency, Jokes)
   | "brain"             // free LLMs (Chrome Nano, Gemini, Groq, OpenRouter)
   | "knowledge";        // online search (Dictionary, DuckDuckGo, Wikipedia)
 

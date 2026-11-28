@@ -83,3 +83,21 @@ test("google calendar skill and daily briefing", () => {
   expect(check?.intent).toBe("calendar_check");
   expect(check?.reply).toContain("team standup");
 });
+
+import { matchOnlineSkill } from "../desktop-ui/src/departments/knowledge/onlineSkills.ts";
+
+test("online web skills: tech news, currency, jokes", async () => {
+  const news = await matchOnlineSkill("what is the tech news today");
+  expect(news).not.toBeNull();
+  expect(news?.intent).toBe("online_tech_news");
+  expect(news?.reply).toContain("headlines");
+
+  const curr = await matchOnlineSkill("convert 100 dollars to rupees");
+  expect(curr).not.toBeNull();
+  expect(curr?.intent).toBe("online_currency_convert");
+  expect(curr?.reply).toContain("USD is currently equal to");
+
+  const joke = await matchOnlineSkill("tell me a funny joke");
+  expect(joke).not.toBeNull();
+  expect(joke?.intent).toBe("online_joke");
+});
