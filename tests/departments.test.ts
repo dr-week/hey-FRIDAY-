@@ -69,3 +69,17 @@ test("department database repositories (SQLite)", () => {
 
   db.close();
 });
+
+import { calendarSkill } from "../desktop-ui/src/departments/conversation/calendarSkill.ts";
+
+test("google calendar skill and daily briefing", () => {
+  const add = calendarSkill("schedule team standup at 10am");
+  expect(add).not.toBeNull();
+  expect(add?.intent).toBe("calendar_add");
+  expect(add?.reply).toContain("team standup");
+
+  const check = calendarSkill("what is my schedule today");
+  expect(check).not.toBeNull();
+  expect(check?.intent).toBe("calendar_check");
+  expect(check?.reply).toContain("team standup");
+});

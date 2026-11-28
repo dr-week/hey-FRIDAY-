@@ -80,4 +80,6 @@ export function notesSkill(t: string): SkillReply | null {
   return null;
 }
 
-export const ASSISTANT_SKILLS = [notesSkill, timerSkill, timeDateSkill, mathSkill];
+import { calendarSkill } from "./calendarSkill.ts";
+
+export const ASSISTANT_SKILLS = [notesSkill, calendarSkill, timerSkill, timeDateSkill, mathSkill];
